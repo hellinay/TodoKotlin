@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <EditText
+        android:id="@+id/editTextNoteEdited"
+        android:layout_width="367dp"
+        android:layout_height="107dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="28dp"
+        android:layout_marginRight="28dp"
+        android:ems="10"
+        android:inputType="textMultiLine"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/buttonUpload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="88dp"
+        android:layout_marginEnd="100dp"
+        android:layout_marginRight="100dp"
+        android:text="UPLOAD"
+        app:icon="@drawable/icons8_upward_arrow_15px_1"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextNoteEdited" />
+
+    <Button
+        android:id="@+id/buttonSave"
+        android:layout_width="146dp"
+        android:layout_height="55dp"
+        android:layout_marginTop="15dp"
+        android:text="Save Changes"
+        android:textSize="12sp"
+
+        app:icon="@drawable/icons8_save_15px"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/RadioGroupEdit" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="95dp"
+        android:layout_height="76dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="17dp"
+        android:layout_marginRight="17dp"
+        android:gravity="center"
+        android:text="Change the Status:"
+        app:layout_constraintEnd_toStartOf="@+id/RadioGroupEdit"
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+
+    <RadioGroup
+        android:id="@+id/RadioGroupEdit"
+        android:layout_width="215dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="83dp"
+        android:layout_marginRight="83dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView">
+
+        <RadioButton
+            android:id="@+id/radioToDo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ToDo"
+            android:textSize="8sp"
+            android:translationX="-5dp"
+            tools:layout_editor_absoluteX="86dp"
+            tools:layout_editor_absoluteY="208dp" />
+
+        <RadioButton
+            android:id="@+id/radioInProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="In Progress"
+            android:textSize="8sp"
+            android:translationX="-5dp"
+            tools:layout_editor_absoluteX="188dp"
+            tools:layout_editor_absoluteY="207dp" />
+
+        <RadioButton
+            android:id="@+id/radioDone"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Done"
+            android:textSize="8sp"
+            android:translationX="-5dp"
+            tools:layout_editor_absoluteX="137dp"
+            tools:layout_editor_absoluteY="207dp" />
+    </RadioGroup>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="114dp"
+        android:layout_height="138dp"
+        android:layout_marginTop="22dp"
+        android:layout_marginEnd="49dp"
+        android:layout_marginRight="49dp"
+        app:layout_constraintEnd_toStartOf="@+id/buttonUpload"
+        app:layout_constraintTop_toBottomOf="@+id/editTextNoteEdited"
+        app:srcCompat="@drawable/icons8_image_file_64px" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

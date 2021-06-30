@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/editTextEnterNote"
+        android:layout_width="355dp"
+        android:layout_height="76dp"
+        android:layout_marginTop="61dp"
+        android:ems="10"
+        android:gravity="start|top"
+        android:inputType="textMultiLine"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/RadioGroupNoteAdd"
+        android:layout_width="202dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="70dp"
+        android:layout_marginEnd="118dp"
+        android:layout_marginRight="118dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextEnterNote">
+
+        <RadioButton
+            android:id="@+id/radioToDo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ToDo"
+            android:textSize="8sp"
+            android:translationX="-5dp"
+            tools:layout_editor_absoluteX="86dp"
+            tools:layout_editor_absoluteY="208dp" />
+
+        <RadioButton
+            android:id="@+id/radioDone"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Done"
+            android:textSize="8sp"
+            android:translationX="-5dp"
+            tools:layout_editor_absoluteX="137dp"
+            tools:layout_editor_absoluteY="207dp" />
+
+        <RadioButton
+            android:id="@+id/radioInProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="In Progress"
+            android:textSize="8sp"
+            android:translationX="-5dp"
+            tools:layout_editor_absoluteX="188dp"
+            tools:layout_editor_absoluteY="207dp" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="83dp"
+        android:layout_marginEnd="19dp"
+        android:layout_marginRight="19dp"
+        android:text="Type:"
+        app:layout_constraintEnd_toStartOf="@+id/RadioGroupNoteAdd"
+        app:layout_constraintTop_toBottomOf="@+id/editTextEnterNote" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="304dp"
+        android:layout_marginRight="304dp"
+        android:text="Note:"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/buttonOkay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="54dp"
+        android:layout_marginRight="54dp"
+        android:text="Okay"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:icon="@drawable/icons8_ok_15px"
+        app:layout_constraintTop_toBottomOf="@+id/RadioGroupNoteAdd"
+        />
+
+    <ImageView
+        android:id="@+id/imageView10"
+        android:layout_width="37dp"
+        android:layout_height="36dp"
+        app:srcCompat="@drawable/icons8_edit_chat_history_48px"
+        tools:layout_editor_absoluteX="28dp"
+        tools:layout_editor_absoluteY="25dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
