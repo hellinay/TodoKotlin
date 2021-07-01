@@ -51,8 +51,11 @@ public class LoginFragment extends Fragment {
                     NavDirections act = LoginFragmentDirections.actionLoginFragmentToNotesFragment(person);
                     Navigation.findNavController(rootView).navigate(act);
                     Log.d("person", person.toString());
+                    Toast.makeText(getContext(), "Login successful, redirecting to Notes Page.", Toast.LENGTH_SHORT).show();
                 }
-                else
+                else if(loginId==null || password==null)
+                    textInputLayoutUsername.setError("Please fill all fields");
+                else if (!(personDao.checkUser(loginId,password)))
                     textInputLayoutUsername.setError("Wrong username or password");
 
 
@@ -70,54 +73,7 @@ public class LoginFragment extends Fragment {
         return rootView;
     }
 
-    public void login() {
-        CheckEditTextStatus();
-        /*boolean recordExists = db.hasObject(loginIdEt.getText().toString());
-        if(recordExists=true){*/
 
-        /*Toast.makeText(getContext(), "Login successful, redirecting to Notes Page.", Toast.LENGTH_LONG).show();
-        NavDirections act = LoginFragmentDirections.actionLoginFragmentToNotesFragment();
-        Navigation.findNavController(getView()).navigate(act);*/
-       /* } else {
-            Toast.makeText(getApplicationContext(), "Invalid credentials, please try again.", Toast.LENGTH_LONG).show();
-        }*/
-
-        if (EditTextEmptyHolder) {
-
-            // Opening SQLite database write permission.
-            //sqLiteDatabaseObj = sqLiteHelper.getWritableDatabase();
-            db = new DBHelper(getContext());
-            db.getWritableDatabase();
-
-
-
-            // Calling method to check final result ..
-            CheckFinalResult();
-
-
-            //If any of login EditText empty then this block will be executed.
-            Toast.makeText(getContext(), "Please Enter UserName or Password.", Toast.LENGTH_LONG).show();
-
-        }
-
-
-    }
-
-    public void CheckEditTextStatus() {
-
-        // Getting value from All EditText and storing into String Variables.
-
-
-        // Checking EditText is empty or no using TextUtils.
-        if (TextUtils.isEmpty(loginId) || TextUtils.isEmpty(password)) {
-
-            EditTextEmptyHolder = false;
-
-        } else {
-
-            EditTextEmptyHolder = true;
-        }
-    }
 
     public void CheckFinalResult() {
 

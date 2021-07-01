@@ -6,6 +6,15 @@ public class Notes {
     private int userId;
     private int type;
     private String note;
+    private String imgpath;
+
+    public String getImgpath() {
+        return imgpath;
+    }
+
+    public void setImgpath(String imgpath) {
+        this.imgpath = imgpath;
+    }
 
     public String getNote() {
         return note;

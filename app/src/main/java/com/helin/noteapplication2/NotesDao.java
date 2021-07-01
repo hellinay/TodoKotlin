@@ -38,6 +38,17 @@ public class NotesDao {
         dba.close();
     }
 
+
+    /*public void uploadImage(String img){
+        db = new DBHelper(myContext.getApplicationContext());
+        SQLiteDatabase dba= db.getWritableDatabase();
+        ContentValues values= new ContentValues();
+        values.put(db.KEY_NOTE_IMG,img);
+        dba.insertOrThrow("notes",null,values);
+        dba.close();
+
+    }*/
+
     public void deleteNote(DBHelper db,int noteId,int person_id){
         db = new DBHelper(myContext.getApplicationContext());
         SQLiteDatabase dba= db.getWritableDatabase();
@@ -48,7 +59,7 @@ public class NotesDao {
 
     }
 
-    public void updateNote(int noteId, int type,int person_id ,String note){
+    public void updateNote(int noteId, int type,int person_id ,String note,String imgPath){
         db = new DBHelper(myContext.getApplicationContext());
         SQLiteDatabase dba= db.getWritableDatabase();
         ContentValues values= new ContentValues();
@@ -56,6 +67,7 @@ public class NotesDao {
 
         values.put(db.KEY_NOTE_TYPE,type);
         values.put(db.KEY_NOTE_NOTE,note);
+        values.put(db.KEY_NOTE_IMG,imgPath);
         Log.e("type",""+type);
         Log.e("note",""+note);
 

@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "notes";
-    private static final int DB_VERSION = 9;
+    private static final int DB_VERSION = 10;
 
 
     public static final String TABLE_NOTES = "Notes";
@@ -32,7 +32,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String KEY_PERSON_USERNAME = "person_username";
     public static final String KEY_PERSON_NAME = "name";
     public static final String KEY_PERSON_SURNAME = "surname";
-    public static final String KEY_PERSON_IMG = "image";
+    public static final String KEY_NOTE_IMG = "image";
     private final Context context;
 
     private SQLiteDatabase dbObj;
@@ -49,7 +49,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 KEY_NOTE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + // Define a primary key
                 KEY_NOTE_TYPE + " INTEGER," +
                 KEY_NOTE_PERSONID + " INTEGER," +
-                KEY_NOTE_NOTE + " TEXT" +
+                KEY_NOTE_NOTE + " TEXT," +
+                KEY_NOTE_IMG + " TEXT" +
 
                 ")";
 
@@ -59,8 +60,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 KEY_PERSON_PASSWORD + " TEXT NOT NULL," +
                 KEY_PERSON_USERNAME + " TEXT," +
                 KEY_PERSON_NAME + " TEXT," +
-                KEY_PERSON_SURNAME + " TEXT," +
-                KEY_PERSON_IMG + " TEXT" +
+                KEY_PERSON_SURNAME + " TEXT" +
                 ")";
 
         db.execSQL(CREATE_NOTES_TABLE);
