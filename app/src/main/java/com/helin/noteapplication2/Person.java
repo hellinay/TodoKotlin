@@ -30,9 +30,6 @@ public class Person implements Serializable {
         return password;
     }
 
-
-
-
     public void setName(String name) {
         this.name = name;
     }

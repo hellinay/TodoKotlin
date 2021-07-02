@@ -10,7 +10,7 @@
         android:id="@+id/cardViewNotes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="@color/salmonpink">
+        app:cardBackgroundColor="@color/surface">
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -26,6 +26,7 @@
                 android:id="@+id/buttonEdit"
                 android:layout_width="83dp"
                 android:layout_height="33dp"
+                style="@style/Widget.Shrine.Button"
                 android:layout_marginStart="12dp"
                 android:layout_marginLeft="12dp"
                 android:layout_marginBottom="8dp"
@@ -43,9 +44,8 @@
                 android:id="@+id/textViewNoteHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="92dp"
-                android:layout_marginLeft="92dp"
-                android:layout_marginTop="20dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
                 android:text="Note"
                 android:textAppearance="@style/TextAppearance.AppCompat.Display2"
                 android:textSize="16sp"
@@ -54,8 +54,10 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
+
                 android:id="@+id/textViewNoteName"
                 android:layout_width="108dp"
+                style="@style/TextAppearance.AppCompat"
                 android:layout_height="55dp"
                 android:layout_marginStart="64dp"
                 android:layout_marginLeft="64dp"
@@ -78,6 +80,8 @@
                 android:paddingBottom="2dp"
                 android:text="Delete"
                 android:textSize="8sp"
+                style="@style/Widget.Shrine.Button"
+
                 app:icon="@drawable/icons8_delete_trash_15px"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/textViewNoteName" />
@@ -126,7 +130,7 @@
                 android:layout_marginRight="12dp"
                 app:layout_constraintEnd_toStartOf="@+id/textViewNoteName"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/icons8_to_do_64px" />
+                app:srcCompat="@drawable/icons8_search_in_list_24px" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

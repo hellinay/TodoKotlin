@@ -1,8 +1,10 @@
 package com.helin.noteapplication2;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.view.LayoutInflater;
@@ -22,6 +24,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.helin.noteapplication2.databinding.FragmentNotesBinding;
 
 import java.util.ArrayList;
@@ -55,13 +58,9 @@ public class Adapter extends RecyclerView.Adapter<Adapter.CardViewNotesHolder> {
     public CardViewNotesHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
         View view = inflater.inflate(R.layout.cardview_notes, parent, false);
-        CardViewNotesHolder cardViewNotesHolder = new CardViewNotesHolder(view);
-        //= new NotesFragment();
         rv = view.findViewById(R.id.RecyclerViewNotes);
-        rgedit = myDialog.findViewById(R.id.RadioGroupEdit);
-        type = rgedit.getCheckedRadioButtonId();
-
-        rbtn = (RadioButton) myDialog.findViewById(type);
+        CardViewNotesHolder cardViewNotesHolder = new CardViewNotesHolder(view);
+        init();
         return cardViewNotesHolder;
 
     }
@@ -114,8 +113,6 @@ public class Adapter extends RecyclerView.Adapter<Adapter.CardViewNotesHolder> {
         public void setdata(Notes note, int position) {
 
             noteTw.setText(note.getNote());
-
-
             if (note.getType() == 1) {
                 radioButtonDone.setChecked(true);
                 noteHeader.setText("Done");
@@ -149,21 +146,31 @@ public class Adapter extends RecyclerView.Adapter<Adapter.CardViewNotesHolder> {
                 @Override
                 public void onClick(View v) {
                     NotesDao itemDelete = new NotesDao(myContext);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(myContext);
                     itemDelete.deleteNote(db, note.getNoteId(), person.getId());
                     notes.remove(position);
                     notifyDataSetChanged();
+                    builder.setMessage("Do you want to delete " + note.getNote() + " ?");
+                    AlertDialog dialog = builder.create();
+                    builder.setPositiveButton(R.string.okayBtn, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            itemDelete.deleteNote(db, note.getNoteId(), person.getId());
+                            notes.remove(position);
+                            notifyDataSetChanged();
+                        }
+                    });
+                    builder.setNegativeButton(R.string.noBtn, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+                        }
+                    });
+
 
                 }
             });
 
 
         }
-
-
-
-
-
-
 
 
         public void checkPermission(String permission, int requestCode) {
@@ -174,10 +181,9 @@ public class Adapter extends RecyclerView.Adapter<Adapter.CardViewNotesHolder> {
 
             } else {
                 Toast.makeText(myContext, "Permission already granted", Toast.LENGTH_SHORT).show();
-                ((NotesFragment)fragment).selectImage();
+                ((NotesFragment) fragment).selectImage();
             }
         }
-
 
 
         public void dialogEdit(Notes note) {
@@ -196,7 +202,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.CardViewNotesHolder> {
             uploadBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE,NotesFragment.READ_EXTERNAL_STORAGE);
+                    checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE, NotesFragment.READ_EXTERNAL_STORAGE);
 
                 }
             });
@@ -210,15 +216,15 @@ public class Adapter extends RecyclerView.Adapter<Adapter.CardViewNotesHolder> {
 
                     if (rbtn.getText().toString().contains("ToDo")) {
                         note.setType(NoteType.TODO);
-                        itemUpdate.updateNote(note.getNoteId(), NoteType.TODO, person.getId(), editedNote.getText().toString(),NotesFragment.selectedImagePath);
+                        itemUpdate.updateNote(note.getNoteId(), NoteType.TODO, person.getId(), editedNote.getText().toString(), NotesFragment.selectedImagePath);
                         note.setNote(editedNote.getText().toString());
                     } else if (rbtn.getText().toString().contains("Done")) {
                         note.setType(NoteType.DONE);
-                        itemUpdate.updateNote(note.getNoteId(), NoteType.DONE, person.getId(), editedNote.getText().toString(),NotesFragment.selectedImagePath);
+                        itemUpdate.updateNote(note.getNoteId(), NoteType.DONE, person.getId(), editedNote.getText().toString(), NotesFragment.selectedImagePath);
                         note.setNote(editedNote.getText().toString());
                     } else if (rbtn.getText().toString().contains("In Progress")) {
                         note.setType(NoteType.INPROGRESS);
-                        itemUpdate.updateNote(note.getNoteId(), NoteType.INPROGRESS, person.getId(), editedNote.getText().toString(),NotesFragment.selectedImagePath);
+                        itemUpdate.updateNote(note.getNoteId(), NoteType.INPROGRESS, person.getId(), editedNote.getText().toString(), NotesFragment.selectedImagePath);
                         note.setNote(editedNote.getText().toString());
                     } else
                         myDialog.dismiss();
@@ -230,6 +236,14 @@ public class Adapter extends RecyclerView.Adapter<Adapter.CardViewNotesHolder> {
 
         }
 
+
+    }
+
+    public void init() {
+
+        rgedit = myDialog.findViewById(R.id.RadioGroupEdit);
+        type = rgedit.getCheckedRadioButtonId();
+        rbtn = (RadioButton) myDialog.findViewById(type);
     }
 }
 

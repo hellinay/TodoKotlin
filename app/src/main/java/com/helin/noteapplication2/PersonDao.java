@@ -29,28 +29,20 @@ public class PersonDao {
     }
     public boolean checkUser(String username, String password) {
         db=new DBHelper(mycontext.getApplicationContext());
-        // array of columns to fetch
         String[] columns = {
-                db.KEY_PERSON_USERNAME
+                db.KEY_PERSON_USERNAME,
+                db.KEY_PERSON_PASSWORD
         };
         SQLiteDatabase dba = db.getReadableDatabase();
-        // selection criteria
         String selection = db.KEY_PERSON_USERNAME + " = ?" + " AND " + db.KEY_PERSON_PASSWORD + " = ?";
-        // selection arguments
         String[] selectionArgs = {username, password};
-        // query user table with conditions
-        /**
-         * Here query function is used to fetch records from user table this function works like we use sql query.
-         * SQL query equivalent to this query function is
-         * SELECT user_id FROM user WHERE user_email = 'jack@androidtutorialshub.com' AND user_password = 'qwerty';
-         */
-        Cursor cursor = dba.query(db.TABLE_PERSON, //Table to query
-                columns,                    //columns to return
-                selection,                  //columns for the WHERE clause
-                selectionArgs,              //The values for the WHERE clause
-                null,                       //group the rows
-                null,                       //filter by row groups
-                null);                      //The sort order
+        Cursor cursor = dba.query(db.TABLE_PERSON,
+                columns,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null);
         int cursorCount = cursor.getCount();
         cursor.close();
         db.close();

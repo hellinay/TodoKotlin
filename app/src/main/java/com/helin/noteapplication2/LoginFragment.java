@@ -53,12 +53,11 @@ public class LoginFragment extends Fragment {
                     Log.d("person", person.toString());
                     Toast.makeText(getContext(), "Login successful, redirecting to Notes Page.", Toast.LENGTH_SHORT).show();
                 }
-                else if(loginId==null || password==null)
-                    textInputLayoutUsername.setError("Please fill all fields");
-                else if (!(personDao.checkUser(loginId,password)))
+
+                else if ((!(personDao.checkUser(loginId,password)) && (loginId!= "" || password!="" )))
                     textInputLayoutUsername.setError("Wrong username or password");
-
-
+                else if (loginId.equals(null) || password.equals(null))
+                    textInputLayoutUsername.setError("Fill the fields");
             }
         });
         registerBtn.setOnClickListener(new View.OnClickListener() {

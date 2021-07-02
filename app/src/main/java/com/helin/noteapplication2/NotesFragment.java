@@ -31,9 +31,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.helin.noteapplication2.databinding.FragmentNotesBinding;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 import static android.app.Activity.RESULT_OK;
+import static android.content.ContentValues.TAG;
 import static androidx.core.app.ActivityCompat.startActivityForResult;
 import static com.helin.noteapplication2.Adapter.myDialog;
 
@@ -43,39 +45,26 @@ public class NotesFragment extends Fragment {
     private Button addNote;
     DBHelper db;
     Dialog dialogadd;
-    Dialog dialogedit;
     RadioButton radioButton;
     Person person;
     private ArrayList<Notes> notes = new ArrayList<>();
     private TextView info;
     public static final int PICK_IMAGE = 5;
-    public static final int READ_EXTERNAL_STORAGE = 101;//private  binding;
+    public static final int READ_EXTERNAL_STORAGE = 101;
     ImageView uploadImg;
     public static String selectedImagePath;
+
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         FragmentNotesBinding binding = FragmentNotesBinding.inflate(inflater, container, false);
         db = new DBHelper(getContext());
         db.getWritableDatabase();
+
         info = binding.textViewInfo;
         addNote = binding.buttonAddNote;
         recyclerView = binding.RecyclerViewNotes;
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        myDialog = new Dialog(getContext(), android.R.style.Theme_DeviceDefault_Light_NoActionBar_Fullscreen);
-        myDialog.setContentView(R.layout.dialog_box_edit);
-        uploadImg=myDialog.findViewById(R.id.imageViewUpload);
-
-
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
-        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(linearLayoutManager);
-        person = NotesFragmentArgs.fromBundle(getArguments()).getPerson();
-        notes = db.getAllNotes(person.getId());
-
-
-        adapter = new Adapter(NotesFragment.this, getContext(), notes, person);
-        recyclerView.setAdapter(adapter);
+        init();
         Log.e("personget", person.toString());
         info.setText("Welcome " + person.getName() + " " + person.getSurname());
         addNote.setOnClickListener(new View.OnClickListener() {
@@ -84,7 +73,6 @@ public class NotesFragment extends Fragment {
                 dialogAdd();
             }
         });
-
 
         return binding.getRoot();
     }
@@ -95,15 +83,14 @@ public class NotesFragment extends Fragment {
         Button okayBtn;
 
         dialogadd = new Dialog(getContext(), android.R.style.Theme_DeviceDefault_Light_NoActionBar_Fullscreen);
-
         dialogadd.setContentView(R.layout.dialog_box_add);
         rg = dialogadd.findViewById(R.id.RadioGroupNoteAdd);
         okayBtn = dialogadd.findViewById(R.id.buttonOkay);
 
-
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         dialogadd.show();
+
         okayBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -147,19 +134,24 @@ public class NotesFragment extends Fragment {
             }
         }
     }
+
     public void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
         if (requestCode == PICK_IMAGE && resultCode == RESULT_OK) {
             Uri selectedImageUri = data.getData();
             selectedImagePath = getRealPathFromURIForGallery(selectedImageUri);
-            //Log.d("onActivityResult: "+selectedImagePath);
-            Bitmap myBitmap = BitmapFactory.decodeFile(selectedImagePath);
-            uploadImg.setImageBitmap(myBitmap);
+            try {
+                Bitmap bitmap = BitmapFactory.decodeStream(requireActivity().getContentResolver().openInputStream(selectedImageUri));
+                uploadImg.setImageBitmap(bitmap);
+            } catch (FileNotFoundException e) {
+                Log.e(TAG, "onActivityResult: " + e.getLocalizedMessage());
+                e.printStackTrace();
+            }
 
-           //// notes.set(selectedImagePath);
-            //binding.textViewImagePath.setText(selectedImagePath);
+
         }
     }
-    public  void selectImage() {
+
+    public void selectImage() {
 
         Intent intent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -167,6 +159,7 @@ public class NotesFragment extends Fragment {
         startActivityForResult(Intent.createChooser(intent, "select image"),
                 PICK_IMAGE);
     }
+
     public String getRealPathFromURIForGallery(Uri uri) {
         if (uri == null) {
             return null;
@@ -185,7 +178,21 @@ public class NotesFragment extends Fragment {
         return uri.getPath();
     }
 
+    public void init() {
 
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        myDialog = new Dialog(getContext(), android.R.style.Theme_DeviceDefault_Light_NoActionBar_Fullscreen);
+        myDialog.setContentView(R.layout.dialog_box_edit);
+        uploadImg = myDialog.findViewById(R.id.imageViewUpload);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        person = NotesFragmentArgs.fromBundle(getArguments()).getPerson();
+        notes = db.getAllNotes(person.getId());
+        adapter = new Adapter(NotesFragment.this, getContext(), notes, person);
+        recyclerView.setAdapter(adapter);
+
+    }
 
 
 }

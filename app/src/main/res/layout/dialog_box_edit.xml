@@ -27,6 +27,7 @@
         android:layout_marginRight="100dp"
         android:text="UPLOAD"
         app:icon="@drawable/icons8_upward_arrow_15px_1"
+        style="@style/Widget.Shrine.Button"
 
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextNoteEdited" />
@@ -38,7 +39,7 @@
         android:layout_marginTop="15dp"
         android:text="Save Changes"
         android:textSize="12sp"
-
+        style="@style/Widget.Shrine.Button"
         app:icon="@drawable/icons8_save_15px"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -103,11 +104,18 @@
         android:id="@+id/imageViewUpload"
         android:layout_width="114dp"
         android:layout_height="138dp"
-        android:layout_marginTop="22dp"
-        android:layout_marginEnd="49dp"
-        android:layout_marginRight="49dp"
+        android:layout_marginTop="72dp"
+        android:layout_marginEnd="48dp"
         app:layout_constraintEnd_toStartOf="@+id/buttonUpload"
         app:layout_constraintTop_toBottomOf="@+id/editTextNoteEdited"
-        app:srcCompat="@drawable/icons8_image_file_64px" />
+        app:srcCompat="@drawable/icons8_image_100px" />
+    <ImageView
+        android:id="@+id/imageView10"
+        android:layout_width="37dp"
+        android:layout_height="36dp"
+        android:layout_marginBottom="76dp"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:srcCompat="@drawable/icons8_edit_48px"
+        tools:ignore="MissingConstraints" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

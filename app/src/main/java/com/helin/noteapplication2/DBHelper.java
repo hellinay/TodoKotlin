@@ -79,7 +79,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public boolean hasObject(String personId){
         SQLiteDatabase db = this.getWritableDatabase();
-        String selectString = "SELECT * FROM " + TABLE_PERSON + " WHERE " + KEY_PERSON_ID + "= ?";
+        String selectString = "SELECT * FROM " + TABLE_PERSON + " WHERE " + KEY_PERSON_USERNAME + "= ?";
 
         Cursor cursor = db.rawQuery(selectString,new String[]{personId});
         boolean exist;

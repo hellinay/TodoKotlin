@@ -15,6 +15,8 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 
+import static android.text.TextUtils.isEmpty;
+
 public class RegisterFragment extends Fragment {
 
     private EditText nameEt;
@@ -27,14 +29,14 @@ public class RegisterFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable  Bundle savedInstanceState) {
-        rootView= inflater.inflate(R.layout.fragment_register,container,false);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        rootView = inflater.inflate(R.layout.fragment_register, container, false);
         init();
 
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                register(nameEt.getText().toString(), surnameEt.getText().toString(),passwordEt.getText().toString(),idEt.getText().toString());
+                register(nameEt.getText().toString(), surnameEt.getText().toString(), passwordEt.getText().toString(), idEt.getText().toString());
 
             }
         });
@@ -43,32 +45,52 @@ public class RegisterFragment extends Fragment {
     }
 
 
-    public void goToLogin(View v,String id)
-    {
-        NavDirections act= RegisterFragmentDirections.actionRegisterFragmentToLoginFragment();
+    public void goToLogin(View v, String id) {
+        NavDirections act = RegisterFragmentDirections.actionRegisterFragmentToLoginFragment();
         Navigation.findNavController(rootView).navigate(act);
     }
 
-    public void register(String name, String surname, String password, String username){
-        PersonDao reg= new PersonDao(getContext());
-       /* if (db.hasObject(id)==true){
-            Toast.makeText(getContext(),"Please set another id",Toast.LENGTH_SHORT).show();
+    public void register(String name, String surname, String password, String username) {
+        PersonDao reg = new PersonDao(getContext());
+        int i=checkDataEntered();
+        if(i==0){
+            if (db.hasObject(username) == true) {
+                Toast.makeText(getContext(), "Please set another username", Toast.LENGTH_SHORT).show();
+            } else if(db.hasObject(username) == false ) {
+                reg.register(db, username, password, name, surname);
+                goToLogin(rootView, username);
+
+            }
         }
         else
-        {*/
-            reg.register(db,username,password,name,surname);
-            goToLogin(rootView,username);
-
-
+            Toast.makeText(getContext(), "Please fill all fields", Toast.LENGTH_SHORT).show();
 
     }
-    public void init(){
+
+    public void init() {
         db = new DBHelper(getContext());
-        registerBtn=rootView.findViewById(R.id.buttonRegisterFrag);
-        nameEt=rootView.findViewById(R.id.editTextRegisterName);
-        surnameEt=rootView.findViewById(R.id.editTextRegisterSurname);
-        passwordEt=rootView.findViewById(R.id.editTextRegisterPassword);
-        idEt=rootView.findViewById(R.id.editTextRegisterId);
+        registerBtn = rootView.findViewById(R.id.buttonRegisterFrag);
+        nameEt = rootView.findViewById(R.id.editTextRegisterName);
+        surnameEt = rootView.findViewById(R.id.editTextRegisterSurname);
+        passwordEt = rootView.findViewById(R.id.editTextRegisterPassword);
+        idEt = rootView.findViewById(R.id.editTextRegisterId);
+    }
+
+    public int checkDataEntered() {
+        int i=0;
+        if (isEmpty(nameEt.getText().toString()))
+            i++;
+
+        if (isEmpty(surnameEt.getText().toString()))
+            i++;
+
+        if (isEmpty(idEt.getText().toString()))
+            i++;
+
+        if (isEmpty(passwordEt.getText().toString()))
+            i++;
+
+        return i;
     }
 
 }
