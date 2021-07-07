@@ -1,0 +1,516 @@
+Index: app/src/main/java/com/helin/noteapplication2/Adapter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.helin.noteapplication2;\r\n\r\nimport android.Manifest;\r\nimport android.app.Dialog;\r\nimport android.content.Context;\r\nimport android.content.pm.PackageManager;\r\nimport android.database.sqlite.SQLiteDatabase;\r\nimport android.view.LayoutInflater;\r\nimport android.view.View;\r\nimport android.view.ViewGroup;\r\nimport android.widget.Button;\r\nimport android.widget.ImageView;\r\nimport android.widget.RadioButton;\r\nimport android.widget.RadioGroup;\r\nimport android.widget.TextView;\r\nimport android.widget.Toast;\r\n\r\nimport androidx.annotation.NonNull;\r\nimport androidx.core.app.ActivityCompat;\r\nimport androidx.core.content.ContextCompat;\r\nimport androidx.fragment.app.Fragment;\r\nimport androidx.recyclerview.widget.LinearLayoutManager;\r\nimport androidx.recyclerview.widget.RecyclerView;\r\n\r\nimport com.helin.noteapplication2.databinding.FragmentNotesBinding;\r\n\r\nimport java.util.ArrayList;\r\n\r\npublic class Adapter extends RecyclerView.Adapter<Adapter.CardViewNotesHolder> {\r\n\r\n    private LayoutInflater inflater;\r\n    public Context myContext;\r\n    public ArrayList<Notes> notes;\r\n    DBHelper db;\r\n    public static Dialog myDialog;\r\n    RadioButton rbtn;\r\n    Person person;\r\n    RecyclerView rv;\r\n    int type;\r\n    RadioGroup rgedit;\r\n\r\n\r\n    Fragment fragment;\r\n\r\n\r\n    public Adapter(Fragment fragment, Context myContext, ArrayList<Notes> notes, Person person) {\r\n        this.myContext = myContext;\r\n        this.inflater = LayoutInflater.from(myContext);\r\n        this.notes = notes;\r\n        this.person = person;\r\n        this.fragment = fragment;\r\n    }\r\n\r\n    @Override\r\n    public CardViewNotesHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {\r\n\r\n        View view = inflater.inflate(R.layout.cardview_notes, parent, false);\r\n        CardViewNotesHolder cardViewNotesHolder = new CardViewNotesHolder(view);\r\n        //= new NotesFragment();\r\n        rv = view.findViewById(R.id.RecyclerViewNotes);\r\n        rgedit = myDialog.findViewById(R.id.RadioGroupEdit);\r\n        type = rgedit.getCheckedRadioButtonId();\r\n\r\n        rbtn = (RadioButton) myDialog.findViewById(type);\r\n        return cardViewNotesHolder;\r\n\r\n    }\r\n\r\n    @Override\r\n    public void onBindViewHolder(@NonNull Adapter.CardViewNotesHolder holder, int position) {\r\n        holder.setdata(notes.get(position), position);\r\n\r\n    }\r\n\r\n    @Override\r\n    public int getItemCount() {\r\n        return notes.size();\r\n\r\n    }\r\n\r\n\r\n    public class CardViewNotesHolder extends RecyclerView.ViewHolder {\r\n\r\n        public Button deleteBtn;\r\n        public Button editBtn;\r\n        public RadioGroup radioGroup;\r\n        public TextView noteTw;\r\n        public RadioButton radioButtonToDo;\r\n        public RadioButton radioButtonInProg;\r\n        public RadioButton radioButtonDone;\r\n        public TextView noteHeader;\r\n\r\n\r\n        public CardViewNotesHolder(@NonNull View v) {\r\n            super(v);\r\n            radioGroup = v.findViewById(R.id.RadioGroupNoteAdd);\r\n            noteHeader = v.findViewById(R.id.textViewNoteHeader);\r\n            noteTw = v.findViewById(R.id.textViewNoteName);\r\n            deleteBtn = v.findViewById(R.id.buttonDel);\r\n            editBtn = v.findViewById(R.id.buttonEdit);\r\n            radioButtonToDo = v.findViewById(R.id.radioToDo);\r\n            radioButtonInProg = v.findViewById(R.id.radioInProgress);\r\n            radioButtonDone = v.findViewById(R.id.radioDone);\r\n\r\n\r\n        }\r\n\r\n        public void allUnclickable() {\r\n            radioButtonDone.setClickable(false);\r\n            radioButtonToDo.setClickable(false);\r\n            radioButtonInProg.setClickable(false);\r\n        }\r\n\r\n        public void setdata(Notes note, int position) {\r\n\r\n            noteTw.setText(note.getNote());\r\n\r\n\r\n            if (note.getType() == 1) {\r\n                radioButtonDone.setChecked(true);\r\n                noteHeader.setText(\"Done\");\r\n                allUnclickable();\r\n                RadioButton done = myDialog.findViewById(R.id.radioDone);\r\n                done.setChecked(true);\r\n\r\n            } else if (note.getType() == 2) {\r\n                radioButtonToDo.setChecked(true);\r\n                noteHeader.setText(\"To Do\");\r\n                allUnclickable();\r\n                RadioButton todo = myDialog.findViewById(R.id.radioToDo);\r\n                todo.setChecked(true);\r\n            } else if (note.getType() == 3) {\r\n                radioButtonInProg.setChecked(true);\r\n                noteHeader.setText(\"In Progress\");\r\n                allUnclickable();\r\n                RadioButton prog = myDialog.findViewById(R.id.radioInProgress);\r\n                prog.setChecked(true);\r\n\r\n            }\r\n\r\n            editBtn.setOnClickListener(new View.OnClickListener() {\r\n                @Override\r\n                public void onClick(View v) {\r\n                    dialogEdit(note);\r\n                }\r\n            });\r\n\r\n            deleteBtn.setOnClickListener(new View.OnClickListener() {\r\n                @Override\r\n                public void onClick(View v) {\r\n                    NotesDao itemDelete = new NotesDao(myContext);\r\n                    itemDelete.deleteNote(db, note.getNoteId(), person.getId());\r\n                    notes.remove(position);\r\n                    notifyDataSetChanged();\r\n\r\n                }\r\n            });\r\n\r\n\r\n        }\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n        public void checkPermission(String permission, int requestCode) {\r\n            if (ContextCompat.checkSelfPermission(myContext, permission) == PackageManager.PERMISSION_DENIED) {\r\n                Toast.makeText(myContext, \"permission\", Toast.LENGTH_SHORT).show();\r\n                ActivityCompat.requestPermissions(fragment.requireActivity(), new String[]{permission}, requestCode);\r\n\r\n\r\n            } else {\r\n                Toast.makeText(myContext, \"Permission already granted\", Toast.LENGTH_SHORT).show();\r\n                ((NotesFragment)fragment).selectImage();\r\n            }\r\n        }\r\n\r\n\r\n\r\n        public void dialogEdit(Notes note) {\r\n            Button saveBtn;\r\n            Button uploadBtn;\r\n            TextView editedNote;\r\n\r\n            uploadBtn = myDialog.findViewById(R.id.buttonUpload);\r\n            saveBtn = myDialog.findViewById(R.id.buttonSave);\r\n            editedNote = myDialog.findViewById(R.id.editTextNoteEdited);\r\n            editedNote.setText(note.getNote());\r\n            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(myContext);\r\n            linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);\r\n            myDialog.show();\r\n\r\n            uploadBtn.setOnClickListener(new View.OnClickListener() {\r\n                @Override\r\n                public void onClick(View v) {\r\n                    checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE,NotesFragment.READ_EXTERNAL_STORAGE);\r\n\r\n                }\r\n            });\r\n\r\n            saveBtn.setOnClickListener(new View.OnClickListener() {\r\n                @Override\r\n                public void onClick(View v) {\r\n                    NotesDao itemUpdate = new NotesDao(myContext);\r\n                    int type = rgedit.getCheckedRadioButtonId();\r\n                    rbtn = (RadioButton) myDialog.findViewById(type);\r\n\r\n                    if (rbtn.getText().toString().contains(\"ToDo\")) {\r\n                        note.setType(NoteType.TODO);\r\n                        itemUpdate.updateNote(note.getNoteId(), NoteType.TODO, person.getId(), editedNote.getText().toString(),NotesFragment.selectedImagePath);\r\n                        note.setNote(editedNote.getText().toString());\r\n                    } else if (rbtn.getText().toString().contains(\"Done\")) {\r\n                        note.setType(NoteType.DONE);\r\n                        itemUpdate.updateNote(note.getNoteId(), NoteType.DONE, person.getId(), editedNote.getText().toString(),NotesFragment.selectedImagePath);\r\n                        note.setNote(editedNote.getText().toString());\r\n                    } else if (rbtn.getText().toString().contains(\"In Progress\")) {\r\n                        note.setType(NoteType.INPROGRESS);\r\n                        itemUpdate.updateNote(note.getNoteId(), NoteType.INPROGRESS, person.getId(), editedNote.getText().toString(),NotesFragment.selectedImagePath);\r\n                        note.setNote(editedNote.getText().toString());\r\n                    } else\r\n                        myDialog.dismiss();\r\n\r\n                    myDialog.dismiss();\r\n                    notifyDataSetChanged();\r\n                }\r\n            });\r\n\r\n        }\r\n\r\n    }\r\n}\r\n\r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/helin/noteapplication2/Adapter.java	(revision b6edefbe543da9746fbdcacb1df83afbb6f94507)
++++ app/src/main/java/com/helin/noteapplication2/Adapter.java	(date 1625224977266)
+@@ -1,8 +1,10 @@
+ package com.helin.noteapplication2;
+ 
+ import android.Manifest;
++import android.app.AlertDialog;
+ import android.app.Dialog;
+ import android.content.Context;
++import android.content.DialogInterface;
+ import android.content.pm.PackageManager;
+ import android.database.sqlite.SQLiteDatabase;
+ import android.view.LayoutInflater;
+@@ -22,6 +24,7 @@
+ import androidx.recyclerview.widget.LinearLayoutManager;
+ import androidx.recyclerview.widget.RecyclerView;
+ 
++import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+ import com.helin.noteapplication2.databinding.FragmentNotesBinding;
+ 
+ import java.util.ArrayList;
+@@ -149,9 +152,26 @@
+                 @Override
+                 public void onClick(View v) {
+                     NotesDao itemDelete = new NotesDao(myContext);
++                    AlertDialog.Builder builder = new AlertDialog.Builder(myContext);
+                     itemDelete.deleteNote(db, note.getNoteId(), person.getId());
+                     notes.remove(position);
+                     notifyDataSetChanged();
++                    builder.setMessage("Do you want to delete "+ note.getNote()+" ?");
++                    AlertDialog dialog = builder.create();
++                    builder.setPositiveButton(R.string.okayBtn, new DialogInterface.OnClickListener() {
++                        public void onClick(DialogInterface dialog, int id) {
++                            itemDelete.deleteNote(db, note.getNoteId(), person.getId());
++                            notes.remove(position);
++                            notifyDataSetChanged();
++                        }
++                    });
++                    builder.setNegativeButton(R.string.noBtn, new DialogInterface.OnClickListener() {
++                        public void onClick(DialogInterface dialog, int id) {
++                            dialog.dismiss();
++                        }
++                    });
++
++
+ 
+                 }
+             });
+Index: app/src/main/res/layout/fragment_login.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<androidx.constraintlayout.widget.ConstraintLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\r\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\r\n    xmlns:tools=\"http://schemas.android.com/tools\"\r\n    android:layout_width=\"match_parent\"\r\n    android:layout_height=\"match_parent\"\r\n    tools:context=\".LoginFragment\">\r\n\r\n\r\n    <com.google.android.material.textfield.TextInputLayout\r\n        android:id=\"@+id/textInputLayoutUsername\"\r\n        android:layout_width=\"250dp\"\r\n        android:layout_height=\"wrap_content\"\r\n        android:layout_marginTop=\"32dp\"\r\n        android:hint=\"Please enter your username\"\r\n\r\n\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintStart_toStartOf=\"parent\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/imageView4\">\r\n\r\n        <com.google.android.material.textfield.TextInputEditText\r\n            android:layout_width=\"match_parent\"\r\n            android:layout_height=\"match_parent\"\r\n            android:layout_gravity=\"center\" />\r\n\r\n    </com.google.android.material.textfield.TextInputLayout>\r\n\r\n    <com.google.android.material.textfield.TextInputLayout\r\n        android:id=\"@+id/textInputLayoutPassword\"\r\n        android:layout_width=\"0dp\"\r\n        android:layout_height=\"wrap_content\"\r\n        android:layout_marginTop=\"16dp\"\r\n        android:ems=\"10\"\r\n        android:hint=\"Please enter your password\"\r\n        android:background=\"@android:color/transparent\"\r\n        app:layout_constraintEnd_toEndOf=\"@+id/textInputLayoutUsername\"\r\n        app:layout_constraintStart_toStartOf=\"@+id/textInputLayoutUsername\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/textInputLayoutUsername\">\r\n\r\n        <com.google.android.material.textfield.TextInputEditText\r\n            android:layout_width=\"match_parent\"\r\n            android:layout_height=\"match_parent\"\r\n            android:layout_gravity=\"center\"\r\n            android:inputType=\"textPassword\" />\r\n\r\n    </com.google.android.material.textfield.TextInputLayout>\r\n    <!--<EditText\r\n\r\n\r\n        android:id=\"@+id/editTextId\"\r\n        android:layout_width=\"wrap_content\"\r\n        android:layout_height=\"wrap_content\"\r\n        android:layout_marginTop=\"73dp\"\r\n        android:layout_marginEnd=\"104dp\"\r\n        android:layout_marginRight=\"104dp\"\r\n        android:ems=\"10\"\r\n        android:hint=\"Your ID...\"\r\n        android:inputType=\"textPersonName\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/imageView4\" />-->\r\n\r\n    <Button\r\n        android:id=\"@+id/buttonLogin\"\r\n        android:layout_width=\"wrap_content\"\r\n        android:layout_height=\"wrap_content\"\r\n        android:layout_marginTop=\"76dp\"\r\n        android:text=\"LOGIN\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintHorizontal_bias=\"0.498\"\r\n        app:layout_constraintStart_toStartOf=\"parent\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/textInputLayoutPassword\" />\r\n\r\n    <TextView\r\n        android:id=\"@+id/textView\"\r\n        android:layout_width=\"wrap_content\"\r\n        android:layout_height=\"wrap_content\"\r\n        android:layout_marginTop=\"32dp\"\r\n        android:text=\"or...\"\r\n        app:layout_constraintEnd_toEndOf=\"@+id/buttonLogin\"\r\n        app:layout_constraintStart_toStartOf=\"@+id/buttonLogin\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/buttonLogin\" />\r\n\r\n    <Button\r\n        android:id=\"@+id/buttonRegister\"\r\n        android:layout_width=\"wrap_content\"\r\n        android:layout_height=\"wrap_content\"\r\n        android:layout_marginTop=\"24dp\"\r\n        android:text=\"REGISTER\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintHorizontal_bias=\"0.498\"\r\n        app:layout_constraintStart_toStartOf=\"parent\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/textView\" />\r\n\r\n    <ImageView\r\n        android:id=\"@+id/imageView4\"\r\n        android:layout_width=\"wrap_content\"\r\n        android:layout_height=\"wrap_content\"\r\n        android:layout_marginTop=\"60dp\"\r\n        android:src=\"@drawable/icons8_security_user_male_64px_1\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintHorizontal_bias=\"0.498\"\r\n        app:layout_constraintStart_toStartOf=\"parent\"\r\n        app:layout_constraintTop_toTopOf=\"parent\" />\r\n\r\n\r\n\r\n</androidx.constraintlayout.widget.ConstraintLayout>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/fragment_login.xml	(revision b6edefbe543da9746fbdcacb1df83afbb6f94507)
++++ app/src/main/res/layout/fragment_login.xml	(date 1625214211854)
+@@ -9,6 +9,8 @@
+ 
+     <com.google.android.material.textfield.TextInputLayout
+         android:id="@+id/textInputLayoutUsername"
++        style="@style/Widget.Shrine.TextInputLayout"
++
+         android:layout_width="250dp"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="32dp"
+@@ -28,6 +30,7 @@
+ 
+     <com.google.android.material.textfield.TextInputLayout
+         android:id="@+id/textInputLayoutPassword"
++        style="@style/Widget.Shrine.TextInputLayout"
+         android:layout_width="0dp"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="16dp"
+@@ -45,20 +48,6 @@
+             android:inputType="textPassword" />
+ 
+     </com.google.android.material.textfield.TextInputLayout>
+-    <!--<EditText
+-
+-
+-        android:id="@+id/editTextId"
+-        android:layout_width="wrap_content"
+-        android:layout_height="wrap_content"
+-        android:layout_marginTop="73dp"
+-        android:layout_marginEnd="104dp"
+-        android:layout_marginRight="104dp"
+-        android:ems="10"
+-        android:hint="Your ID..."
+-        android:inputType="textPersonName"
+-        app:layout_constraintEnd_toEndOf="parent"
+-        app:layout_constraintTop_toBottomOf="@+id/imageView4" />-->
+ 
+     <Button
+         android:id="@+id/buttonLogin"
+@@ -66,6 +55,7 @@
+         android:layout_height="wrap_content"
+         android:layout_marginTop="76dp"
+         android:text="LOGIN"
++        style="@style/Widget.Shrine.Button"
+         app:layout_constraintEnd_toEndOf="parent"
+         app:layout_constraintHorizontal_bias="0.498"
+         app:layout_constraintStart_toStartOf="parent"
+@@ -86,6 +76,7 @@
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="24dp"
++        style="@style/Widget.Shrine.Button"
+         android:text="REGISTER"
+         app:layout_constraintEnd_toEndOf="parent"
+         app:layout_constraintHorizontal_bias="0.498"
+@@ -97,7 +88,7 @@
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="60dp"
+-        android:src="@drawable/icons8_security_user_male_64px_1"
++        android:src="@drawable/logotemiz_1_85x85"
+         app:layout_constraintEnd_toEndOf="parent"
+         app:layout_constraintHorizontal_bias="0.498"
+         app:layout_constraintStart_toStartOf="parent"
+Index: app/src/main/res/layout/dialog_box_edit.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<androidx.constraintlayout.widget.ConstraintLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\r\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\r\n    xmlns:tools=\"http://schemas.android.com/tools\"\r\n    android:layout_width=\"match_parent\"\r\n    android:layout_height=\"match_parent\"\r\n    >\r\n\r\n    <EditText\r\n        android:id=\"@+id/editTextNoteEdited\"\r\n        android:layout_width=\"367dp\"\r\n        android:layout_height=\"107dp\"\r\n        android:layout_marginTop=\"36dp\"\r\n        android:layout_marginEnd=\"28dp\"\r\n        android:layout_marginRight=\"28dp\"\r\n        android:ems=\"10\"\r\n        android:inputType=\"textMultiLine\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintTop_toTopOf=\"parent\" />\r\n\r\n    <Button\r\n        android:id=\"@+id/buttonUpload\"\r\n        android:layout_width=\"wrap_content\"\r\n        android:layout_height=\"wrap_content\"\r\n        android:layout_marginTop=\"88dp\"\r\n        android:layout_marginEnd=\"100dp\"\r\n        android:layout_marginRight=\"100dp\"\r\n        android:text=\"UPLOAD\"\r\n        app:icon=\"@drawable/icons8_upward_arrow_15px_1\"\r\n\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/editTextNoteEdited\" />\r\n\r\n    <Button\r\n        android:id=\"@+id/buttonSave\"\r\n        android:layout_width=\"146dp\"\r\n        android:layout_height=\"55dp\"\r\n        android:layout_marginTop=\"15dp\"\r\n        android:text=\"Save Changes\"\r\n        android:textSize=\"12sp\"\r\n\r\n        app:icon=\"@drawable/icons8_save_15px\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintHorizontal_bias=\"0.5\"\r\n        app:layout_constraintStart_toStartOf=\"parent\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/RadioGroupEdit\" />\r\n\r\n    <TextView\r\n        android:id=\"@+id/textView3\"\r\n        android:layout_width=\"95dp\"\r\n        android:layout_height=\"76dp\"\r\n        android:layout_marginTop=\"50dp\"\r\n        android:layout_marginEnd=\"17dp\"\r\n        android:layout_marginRight=\"17dp\"\r\n        android:gravity=\"center\"\r\n        android:text=\"Change the Status:\"\r\n        app:layout_constraintEnd_toStartOf=\"@+id/RadioGroupEdit\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/imageViewUpload\" />\r\n\r\n    <RadioGroup\r\n        android:id=\"@+id/RadioGroupEdit\"\r\n        android:layout_width=\"215dp\"\r\n        android:layout_height=\"61dp\"\r\n        android:layout_marginTop=\"50dp\"\r\n        android:layout_marginEnd=\"83dp\"\r\n        android:layout_marginRight=\"83dp\"\r\n        android:orientation=\"horizontal\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/imageViewUpload\">\r\n\r\n        <RadioButton\r\n            android:id=\"@+id/radioToDo\"\r\n            android:layout_width=\"wrap_content\"\r\n            android:layout_height=\"wrap_content\"\r\n            android:text=\"ToDo\"\r\n            android:textSize=\"8sp\"\r\n            android:translationX=\"-5dp\"\r\n            tools:layout_editor_absoluteX=\"86dp\"\r\n            tools:layout_editor_absoluteY=\"208dp\" />\r\n\r\n        <RadioButton\r\n            android:id=\"@+id/radioInProgress\"\r\n            android:layout_width=\"wrap_content\"\r\n            android:layout_height=\"match_parent\"\r\n            android:text=\"In Progress\"\r\n            android:textSize=\"8sp\"\r\n            android:translationX=\"-5dp\"\r\n            tools:layout_editor_absoluteX=\"188dp\"\r\n            tools:layout_editor_absoluteY=\"207dp\" />\r\n\r\n        <RadioButton\r\n            android:id=\"@+id/radioDone\"\r\n            android:layout_width=\"wrap_content\"\r\n            android:layout_height=\"match_parent\"\r\n            android:text=\"Done\"\r\n            android:textSize=\"8sp\"\r\n            android:translationX=\"-5dp\"\r\n            tools:layout_editor_absoluteX=\"137dp\"\r\n            tools:layout_editor_absoluteY=\"207dp\" />\r\n    </RadioGroup>\r\n\r\n    <ImageView\r\n        android:id=\"@+id/imageViewUpload\"\r\n        android:layout_width=\"114dp\"\r\n        android:layout_height=\"138dp\"\r\n        android:layout_marginTop=\"22dp\"\r\n        android:layout_marginEnd=\"49dp\"\r\n        android:layout_marginRight=\"49dp\"\r\n        app:layout_constraintEnd_toStartOf=\"@+id/buttonUpload\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/editTextNoteEdited\"\r\n        app:srcCompat=\"@drawable/icons8_image_file_64px\" />\r\n\r\n</androidx.constraintlayout.widget.ConstraintLayout>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/dialog_box_edit.xml	(revision b6edefbe543da9746fbdcacb1df83afbb6f94507)
++++ app/src/main/res/layout/dialog_box_edit.xml	(date 1625225122039)
+@@ -27,6 +27,7 @@
+         android:layout_marginRight="100dp"
+         android:text="UPLOAD"
+         app:icon="@drawable/icons8_upward_arrow_15px_1"
++        style="@style/Widget.Shrine.Button"
+ 
+         app:layout_constraintEnd_toEndOf="parent"
+         app:layout_constraintTop_toBottomOf="@+id/editTextNoteEdited" />
+@@ -38,7 +39,7 @@
+         android:layout_marginTop="15dp"
+         android:text="Save Changes"
+         android:textSize="12sp"
+-
++        style="@style/Widget.Shrine.Button"
+         app:icon="@drawable/icons8_save_15px"
+         app:layout_constraintEnd_toEndOf="parent"
+         app:layout_constraintHorizontal_bias="0.5"
+@@ -103,11 +104,18 @@
+         android:id="@+id/imageViewUpload"
+         android:layout_width="114dp"
+         android:layout_height="138dp"
+-        android:layout_marginTop="22dp"
+-        android:layout_marginEnd="49dp"
+-        android:layout_marginRight="49dp"
++        android:layout_marginTop="72dp"
++        android:layout_marginEnd="48dp"
+         app:layout_constraintEnd_toStartOf="@+id/buttonUpload"
+         app:layout_constraintTop_toBottomOf="@+id/editTextNoteEdited"
+-        app:srcCompat="@drawable/icons8_image_file_64px" />
++        app:srcCompat="@drawable/icons8_image_100px" />
++    <ImageView
++        android:id="@+id/imageView10"
++        android:layout_width="37dp"
++        android:layout_height="36dp"
++        android:layout_marginBottom="76dp"
++        app:layout_constraintHorizontal_bias="0.0"
++        app:srcCompat="@drawable/icons8_edit_48px"
++        tools:ignore="MissingConstraints" />
+ 
+ </androidx.constraintlayout.widget.ConstraintLayout>
+\ No newline at end of file
+Index: app/src/main/res/layout/fragment_register.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<androidx.constraintlayout.widget.ConstraintLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\r\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\r\n    xmlns:tools=\"http://schemas.android.com/tools\"\r\n    android:layout_width=\"match_parent\"\r\n    android:layout_height=\"match_parent\"\r\n    tools:context=\".RegisterFragment\">>\r\n\r\n    <FrameLayout\r\n        android:layout_width=\"match_parent\"\r\n        android:layout_height=\"match_parent\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintTop_toTopOf=\"parent\">\r\n\r\n        <androidx.constraintlayout.widget.ConstraintLayout\r\n            android:layout_width=\"match_parent\"\r\n            android:layout_height=\"match_parent\">\r\n\r\n            <EditText\r\n                android:id=\"@+id/editTextRegisterSurname\"\r\n                android:layout_width=\"wrap_content\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:layout_marginTop=\"12dp\"\r\n                android:layout_marginEnd=\"101dp\"\r\n                android:layout_marginRight=\"101dp\"\r\n                android:ems=\"10\"\r\n                android:hint=\"Surname\"\r\n                android:inputType=\"textPersonName\"\r\n                android:textStyle=\"italic\"\r\n                app:layout_constraintEnd_toEndOf=\"parent\"\r\n                app:layout_constraintTop_toBottomOf=\"@+id/editTextRegisterName\" />\r\n\r\n            <EditText\r\n                android:id=\"@+id/editTextRegisterName\"\r\n                android:layout_width=\"wrap_content\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:layout_marginTop=\"12dp\"\r\n                android:layout_marginEnd=\"101dp\"\r\n                android:layout_marginRight=\"101dp\"\r\n                android:ems=\"10\"\r\n                android:hint=\"Name\"\r\n                android:inputType=\"textPersonName\"\r\n                android:textStyle=\"italic\"\r\n                app:layout_constraintEnd_toEndOf=\"parent\"\r\n                app:layout_constraintTop_toBottomOf=\"@+id/editTextRegisterPassword\" />\r\n\r\n            <Button\r\n                android:id=\"@+id/buttonRegisterFrag\"\r\n                android:layout_width=\"wrap_content\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:layout_marginTop=\"69dp\"\r\n                android:text=\"REGISTER\"\r\n                app:layout_constraintEnd_toEndOf=\"parent\"\r\n                app:layout_constraintHorizontal_bias=\"0.5\"\r\n                app:layout_constraintStart_toStartOf=\"parent\"\r\n                app:layout_constraintTop_toBottomOf=\"@+id/editTextRegisterSurname\" />\r\n\r\n            <EditText\r\n                android:id=\"@+id/editTextRegisterPassword\"\r\n                android:layout_width=\"wrap_content\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:layout_marginTop=\"12dp\"\r\n                android:layout_marginEnd=\"101dp\"\r\n                android:layout_marginRight=\"101dp\"\r\n                android:ems=\"10\"\r\n                android:hint=\"Password\"\r\n                android:inputType=\"textPassword\"\r\n                android:textStyle=\"italic\"\r\n                app:layout_constraintEnd_toEndOf=\"parent\"\r\n                app:layout_constraintTop_toBottomOf=\"@+id/editTextRegisterId\" />\r\n\r\n            <EditText\r\n                android:id=\"@+id/editTextRegisterId\"\r\n                android:layout_width=\"210dp\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:layout_marginTop=\"196dp\"\r\n                android:layout_marginEnd=\"101dp\"\r\n                android:layout_marginRight=\"101dp\"\r\n                android:ems=\"10\"\r\n                android:hint=\"Your Id\"\r\n                android:inputType=\"textPersonName\"\r\n                android:textStyle=\"italic\"\r\n                app:layout_constraintEnd_toEndOf=\"parent\"\r\n                app:layout_constraintTop_toTopOf=\"parent\" />\r\n\r\n            <ImageView\r\n                android:id=\"@+id/imageView2\"\r\n                android:layout_width=\"wrap_content\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:layout_marginTop=\"93dp\"\r\n                android:src=\"@drawable/icons8_portrait_64px\"\r\n                app:layout_constraintEnd_toEndOf=\"parent\"\r\n                app:layout_constraintHorizontal_bias=\"0.5\"\r\n                app:layout_constraintStart_toStartOf=\"parent\"\r\n                app:layout_constraintTop_toTopOf=\"parent\" />\r\n        </androidx.constraintlayout.widget.ConstraintLayout>\r\n\r\n    </FrameLayout>\r\n\r\n</androidx.constraintlayout.widget.ConstraintLayout>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/fragment_register.xml	(revision b6edefbe543da9746fbdcacb1df83afbb6f94507)
++++ app/src/main/res/layout/fragment_register.xml	(date 1625225230760)
+@@ -53,6 +53,8 @@
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintHorizontal_bias="0.5"
+                 app:layout_constraintStart_toStartOf="parent"
++                style="@style/Widget.Shrine.Button"
++
+                 app:layout_constraintTop_toBottomOf="@+id/editTextRegisterSurname" />
+ 
+             <EditText
+@@ -88,7 +90,7 @@
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginTop="93dp"
+-                android:src="@drawable/icons8_portrait_64px"
++                android:src="@drawable/icons8_user_64px"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintHorizontal_bias="0.5"
+                 app:layout_constraintStart_toStartOf="parent"
+Index: app/src/main/res/layout/cardview_notes.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\r\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\r\n    xmlns:tools=\"http://schemas.android.com/tools\"\r\n    android:layout_width=\"match_parent\"\r\n    android:layout_height=\"wrap_content\"\r\n    android:orientation=\"vertical\">\r\n\r\n    <androidx.cardview.widget.CardView\r\n        android:id=\"@+id/cardViewNotes\"\r\n        android:layout_width=\"match_parent\"\r\n        android:layout_height=\"wrap_content\"\r\n        app:cardBackgroundColor=\"@color/salmonpink\">\r\n\r\n\r\n        <androidx.constraintlayout.widget.ConstraintLayout\r\n            android:layout_width=\"match_parent\"\r\n            android:layout_height=\"126dp\"\r\n            app:layout_constraintBottom_toBottomOf=\"parent\"\r\n            app:layout_constraintEnd_toEndOf=\"parent\"\r\n            app:layout_constraintHorizontal_bias=\"0.5\"\r\n            app:layout_constraintStart_toStartOf=\"parent\"\r\n            app:layout_constraintTop_toTopOf=\"parent\">\r\n\r\n            <Button\r\n                android:id=\"@+id/buttonEdit\"\r\n                android:layout_width=\"83dp\"\r\n                android:layout_height=\"33dp\"\r\n                android:layout_marginStart=\"12dp\"\r\n                android:layout_marginLeft=\"12dp\"\r\n                android:layout_marginBottom=\"8dp\"\r\n                android:paddingLeft=\"8dp\"\r\n                android:paddingTop=\"2dp\"\r\n                android:paddingRight=\"8dp\"\r\n                android:paddingBottom=\"2dp\"\r\n                android:text=\"EDIT\"\r\n                android:textSize=\"8sp\"\r\n                app:icon=\"@drawable/icons8_edit_15px\"\r\n                app:layout_constraintBottom_toBottomOf=\"parent\"\r\n                app:layout_constraintStart_toEndOf=\"@+id/buttonDel\" />\r\n\r\n            <TextView\r\n                android:id=\"@+id/textViewNoteHeader\"\r\n                android:layout_width=\"wrap_content\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:layout_marginStart=\"92dp\"\r\n                android:layout_marginLeft=\"92dp\"\r\n                android:layout_marginTop=\"20dp\"\r\n                android:text=\"Note\"\r\n                android:textAppearance=\"@style/TextAppearance.AppCompat.Display2\"\r\n                android:textSize=\"16sp\"\r\n                android:textStyle=\"bold\"\r\n                app:layout_constraintStart_toStartOf=\"parent\"\r\n                app:layout_constraintTop_toTopOf=\"parent\" />\r\n\r\n            <TextView\r\n                android:id=\"@+id/textViewNoteName\"\r\n                android:layout_width=\"108dp\"\r\n                android:layout_height=\"55dp\"\r\n                android:layout_marginStart=\"64dp\"\r\n                android:layout_marginLeft=\"64dp\"\r\n                android:layout_marginTop=\"4dp\"\r\n                android:text=\"TextView\"\r\n                app:layout_constraintStart_toStartOf=\"parent\"\r\n                app:layout_constraintTop_toBottomOf=\"@+id/textViewNoteHeader\" />\r\n\r\n\r\n            <Button\r\n                android:id=\"@+id/buttonDel\"\r\n                android:layout_width=\"82dp\"\r\n                android:layout_height=\"32dp\"\r\n                android:layout_marginStart=\"16dp\"\r\n                android:layout_marginLeft=\"16dp\"\r\n                android:layout_marginBottom=\"8dp\"\r\n                android:paddingLeft=\"8dp\"\r\n                android:paddingTop=\"2dp\"\r\n                android:paddingRight=\"8dp\"\r\n                android:paddingBottom=\"2dp\"\r\n                android:text=\"Delete\"\r\n                android:textSize=\"8sp\"\r\n                app:icon=\"@drawable/icons8_delete_trash_15px\"\r\n                app:layout_constraintBottom_toBottomOf=\"parent\"\r\n                app:layout_constraintStart_toEndOf=\"@+id/textViewNoteName\" />\r\n\r\n            <RadioGroup\r\n                android:id=\"@+id/RadioGroupNoteAdd\"\r\n                android:layout_width=\"202dp\"\r\n                android:layout_height=\"50dp\"\r\n                android:orientation=\"horizontal\"\r\n                app:layout_constraintBottom_toBottomOf=\"@+id/textViewNoteName\"\r\n                app:layout_constraintEnd_toEndOf=\"parent\"\r\n                app:layout_constraintStart_toEndOf=\"@+id/textViewNoteName\"\r\n                app:layout_constraintTop_toTopOf=\"@+id/textViewNoteHeader\">\r\n\r\n                <RadioButton\r\n                    android:id=\"@+id/radioToDo\"\r\n                    android:layout_width=\"wrap_content\"\r\n                    android:layout_height=\"wrap_content\"\r\n                    android:text=\"ToDo\"\r\n                    android:textSize=\"8sp\"\r\n                    android:translationX=\"-5dp\" />\r\n\r\n                <RadioButton\r\n                    android:id=\"@+id/radioDone\"\r\n                    android:layout_width=\"wrap_content\"\r\n                    android:layout_height=\"match_parent\"\r\n                    android:text=\"Done\"\r\n                    android:textSize=\"8sp\"\r\n                    android:translationX=\"-5dp\" />\r\n\r\n                <RadioButton\r\n                    android:id=\"@+id/radioInProgress\"\r\n                    android:layout_width=\"wrap_content\"\r\n                    android:layout_height=\"match_parent\"\r\n                    android:text=\"In Progress\"\r\n                    android:textSize=\"8sp\"\r\n                    android:translationX=\"-5dp\" />\r\n            </RadioGroup>\r\n\r\n            <ImageView\r\n                android:id=\"@+id/imageView6\"\r\n                android:layout_width=\"46dp\"\r\n                android:layout_height=\"51dp\"\r\n                android:layout_marginTop=\"45dp\"\r\n                android:layout_marginEnd=\"12dp\"\r\n                android:layout_marginRight=\"12dp\"\r\n                app:layout_constraintEnd_toStartOf=\"@+id/textViewNoteName\"\r\n                app:layout_constraintTop_toTopOf=\"parent\"\r\n                app:srcCompat=\"@drawable/icons8_to_do_64px\" />\r\n\r\n\r\n        </androidx.constraintlayout.widget.ConstraintLayout>\r\n    </androidx.cardview.widget.CardView>\r\n\r\n</LinearLayout>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/cardview_notes.xml	(revision b6edefbe543da9746fbdcacb1df83afbb6f94507)
++++ app/src/main/res/layout/cardview_notes.xml	(date 1625222982132)
+@@ -10,7 +10,7 @@
+         android:id="@+id/cardViewNotes"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+-        app:cardBackgroundColor="@color/salmonpink">
++        app:cardBackgroundColor="@color/surface">
+ 
+ 
+         <androidx.constraintlayout.widget.ConstraintLayout
+@@ -26,6 +26,7 @@
+                 android:id="@+id/buttonEdit"
+                 android:layout_width="83dp"
+                 android:layout_height="33dp"
++                style="@style/Widget.Shrine.Button"
+                 android:layout_marginStart="12dp"
+                 android:layout_marginLeft="12dp"
+                 android:layout_marginBottom="8dp"
+@@ -43,9 +44,8 @@
+                 android:id="@+id/textViewNoteHeader"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+-                android:layout_marginStart="92dp"
+-                android:layout_marginLeft="92dp"
+-                android:layout_marginTop="20dp"
++                android:layout_marginStart="8dp"
++                android:layout_marginTop="16dp"
+                 android:text="Note"
+                 android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+                 android:textSize="16sp"
+@@ -54,8 +54,10 @@
+                 app:layout_constraintTop_toTopOf="parent" />
+ 
+             <TextView
++
+                 android:id="@+id/textViewNoteName"
+                 android:layout_width="108dp"
++                style="@style/TextAppearance.AppCompat"
+                 android:layout_height="55dp"
+                 android:layout_marginStart="64dp"
+                 android:layout_marginLeft="64dp"
+@@ -78,6 +80,8 @@
+                 android:paddingBottom="2dp"
+                 android:text="Delete"
+                 android:textSize="8sp"
++                style="@style/Widget.Shrine.Button"
++
+                 app:icon="@drawable/icons8_delete_trash_15px"
+                 app:layout_constraintBottom_toBottomOf="parent"
+                 app:layout_constraintStart_toEndOf="@+id/textViewNoteName" />
+@@ -126,7 +130,7 @@
+                 android:layout_marginRight="12dp"
+                 app:layout_constraintEnd_toStartOf="@+id/textViewNoteName"
+                 app:layout_constraintTop_toTopOf="parent"
+-                app:srcCompat="@drawable/icons8_to_do_64px" />
++                app:srcCompat="@drawable/icons8_search_in_list_24px" />
+ 
+ 
+         </androidx.constraintlayout.widget.ConstraintLayout>
+Index: app/src/main/res/layout/dialog_box_add.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<androidx.constraintlayout.widget.ConstraintLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\r\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\r\n    xmlns:tools=\"http://schemas.android.com/tools\"\r\n    android:layout_width=\"match_parent\"\r\n    android:layout_height=\"match_parent\">\r\n\r\n    <EditText\r\n        android:id=\"@+id/editTextEnterNote\"\r\n        android:layout_width=\"355dp\"\r\n        android:layout_height=\"76dp\"\r\n        android:layout_marginTop=\"61dp\"\r\n        android:ems=\"10\"\r\n        android:gravity=\"start|top\"\r\n        android:inputType=\"textMultiLine\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintHorizontal_bias=\"0.5\"\r\n        app:layout_constraintStart_toStartOf=\"parent\"\r\n        app:layout_constraintTop_toTopOf=\"parent\" />\r\n\r\n    <RadioGroup\r\n        android:id=\"@+id/RadioGroupNoteAdd\"\r\n        android:layout_width=\"202dp\"\r\n        android:layout_height=\"50dp\"\r\n        android:layout_marginTop=\"70dp\"\r\n        android:layout_marginEnd=\"118dp\"\r\n        android:layout_marginRight=\"118dp\"\r\n        android:orientation=\"horizontal\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/editTextEnterNote\">\r\n\r\n        <RadioButton\r\n            android:id=\"@+id/radioToDo\"\r\n            android:layout_width=\"wrap_content\"\r\n            android:layout_height=\"wrap_content\"\r\n            android:text=\"ToDo\"\r\n            android:textSize=\"8sp\"\r\n            android:translationX=\"-5dp\"\r\n            tools:layout_editor_absoluteX=\"86dp\"\r\n            tools:layout_editor_absoluteY=\"208dp\" />\r\n\r\n        <RadioButton\r\n            android:id=\"@+id/radioDone\"\r\n            android:layout_width=\"wrap_content\"\r\n            android:layout_height=\"match_parent\"\r\n            android:text=\"Done\"\r\n            android:textSize=\"8sp\"\r\n            android:translationX=\"-5dp\"\r\n            tools:layout_editor_absoluteX=\"137dp\"\r\n            tools:layout_editor_absoluteY=\"207dp\" />\r\n\r\n        <RadioButton\r\n            android:id=\"@+id/radioInProgress\"\r\n            android:layout_width=\"wrap_content\"\r\n            android:layout_height=\"match_parent\"\r\n            android:text=\"In Progress\"\r\n            android:textSize=\"8sp\"\r\n            android:translationX=\"-5dp\"\r\n            tools:layout_editor_absoluteX=\"188dp\"\r\n            tools:layout_editor_absoluteY=\"207dp\" />\r\n    </RadioGroup>\r\n\r\n    <TextView\r\n        android:id=\"@+id/textView2\"\r\n        android:layout_width=\"wrap_content\"\r\n        android:layout_height=\"wrap_content\"\r\n        android:layout_marginTop=\"83dp\"\r\n        android:layout_marginEnd=\"19dp\"\r\n        android:layout_marginRight=\"19dp\"\r\n        android:text=\"Type:\"\r\n        app:layout_constraintEnd_toStartOf=\"@+id/RadioGroupNoteAdd\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/editTextEnterNote\" />\r\n\r\n    <TextView\r\n        android:id=\"@+id/textView4\"\r\n        android:layout_width=\"wrap_content\"\r\n        android:layout_height=\"wrap_content\"\r\n        android:layout_marginTop=\"32dp\"\r\n        android:layout_marginEnd=\"304dp\"\r\n        android:layout_marginRight=\"304dp\"\r\n        android:text=\"Note:\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintTop_toTopOf=\"parent\" />\r\n\r\n    <Button\r\n        android:id=\"@+id/buttonOkay\"\r\n        android:layout_width=\"wrap_content\"\r\n        android:layout_height=\"wrap_content\"\r\n        android:layout_marginTop=\"25dp\"\r\n        android:layout_marginEnd=\"54dp\"\r\n        android:layout_marginRight=\"54dp\"\r\n        android:text=\"Okay\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:icon=\"@drawable/icons8_ok_15px\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/RadioGroupNoteAdd\"\r\n        />\r\n\r\n    <ImageView\r\n        android:id=\"@+id/imageView10\"\r\n        android:layout_width=\"37dp\"\r\n        android:layout_height=\"36dp\"\r\n        app:srcCompat=\"@drawable/icons8_edit_chat_history_48px\"\r\n        tools:layout_editor_absoluteX=\"28dp\"\r\n        tools:layout_editor_absoluteY=\"25dp\" />\r\n\r\n</androidx.constraintlayout.widget.ConstraintLayout>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/dialog_box_add.xml	(revision b6edefbe543da9746fbdcacb1df83afbb6f94507)
++++ app/src/main/res/layout/dialog_box_add.xml	(date 1625223363464)
+@@ -69,7 +69,9 @@
+         android:layout_marginRight="19dp"
+         android:text="Type:"
+         app:layout_constraintEnd_toStartOf="@+id/RadioGroupNoteAdd"
+-        app:layout_constraintTop_toBottomOf="@+id/editTextEnterNote" />
++        app:layout_constraintTop_toBottomOf="@+id/editTextEnterNote"
++        />
++
+ 
+     <TextView
+         android:id="@+id/textView4"
+@@ -84,6 +86,7 @@
+ 
+     <Button
+         android:id="@+id/buttonOkay"
++        style="@style/Widget.Shrine.Button"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="25dp"
+@@ -99,8 +102,11 @@
+         android:id="@+id/imageView10"
+         android:layout_width="37dp"
+         android:layout_height="36dp"
+-        app:srcCompat="@drawable/icons8_edit_chat_history_48px"
+-        tools:layout_editor_absoluteX="28dp"
+-        tools:layout_editor_absoluteY="25dp" />
++        android:layout_marginBottom="76dp"
++        app:layout_constraintBottom_toBottomOf="@+id/editTextEnterNote"
++        app:layout_constraintEnd_toStartOf="@+id/textView4"
++        app:layout_constraintHorizontal_bias="0.0"
++        app:layout_constraintStart_toStartOf="@+id/editTextEnterNote"
++        app:srcCompat="@drawable/icons8_edit_property_48px_1" />
+ 
+ </androidx.constraintlayout.widget.ConstraintLayout>
+\ No newline at end of file
+Index: app/src/main/java/com/helin/noteapplication2/NotesFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.helin.noteapplication2;\r\n\r\nimport android.app.Activity;\r\nimport android.app.Dialog;\r\nimport android.content.Intent;\r\nimport android.content.pm.PackageManager;\r\nimport android.database.Cursor;\r\nimport android.graphics.Bitmap;\r\nimport android.graphics.BitmapFactory;\r\nimport android.net.Uri;\r\nimport android.os.Bundle;\r\nimport android.provider.MediaStore;\r\nimport android.util.Log;\r\nimport android.view.LayoutInflater;\r\nimport android.view.View;\r\nimport android.view.ViewGroup;\r\nimport android.widget.ArrayAdapter;\r\nimport android.widget.Button;\r\nimport android.widget.EditText;\r\nimport android.widget.ImageView;\r\nimport android.widget.RadioButton;\r\nimport android.widget.RadioGroup;\r\nimport android.widget.TextView;\r\nimport android.widget.Toast;\r\n\r\nimport androidx.annotation.NonNull;\r\nimport androidx.annotation.Nullable;\r\nimport androidx.fragment.app.Fragment;\r\nimport androidx.recyclerview.widget.LinearLayoutManager;\r\nimport androidx.recyclerview.widget.RecyclerView;\r\n\r\nimport com.helin.noteapplication2.databinding.FragmentNotesBinding;\r\n\r\nimport java.util.ArrayList;\r\n\r\nimport static android.app.Activity.RESULT_OK;\r\nimport static androidx.core.app.ActivityCompat.startActivityForResult;\r\nimport static com.helin.noteapplication2.Adapter.myDialog;\r\n\r\npublic class NotesFragment extends Fragment {\r\n    RecyclerView recyclerView;\r\n    private Adapter adapter;\r\n    private Button addNote;\r\n    DBHelper db;\r\n    Dialog dialogadd;\r\n    Dialog dialogedit;\r\n    RadioButton radioButton;\r\n    Person person;\r\n    private ArrayList<Notes> notes = new ArrayList<>();\r\n    private TextView info;\r\n    public static final int PICK_IMAGE = 5;\r\n    public static final int READ_EXTERNAL_STORAGE = 101;//private  binding;\r\n    ImageView uploadImg;\r\n    public static String selectedImagePath;\r\n    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {\r\n\r\n        FragmentNotesBinding binding = FragmentNotesBinding.inflate(inflater, container, false);\r\n        db = new DBHelper(getContext());\r\n        db.getWritableDatabase();\r\n        info = binding.textViewInfo;\r\n        addNote = binding.buttonAddNote;\r\n        recyclerView = binding.RecyclerViewNotes;\r\n\r\n        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));\r\n        myDialog = new Dialog(getContext(), android.R.style.Theme_DeviceDefault_Light_NoActionBar_Fullscreen);\r\n        myDialog.setContentView(R.layout.dialog_box_edit);\r\n        uploadImg=myDialog.findViewById(R.id.imageViewUpload);\r\n\r\n\r\n        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());\r\n        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);\r\n        recyclerView.setLayoutManager(linearLayoutManager);\r\n        person = NotesFragmentArgs.fromBundle(getArguments()).getPerson();\r\n        notes = db.getAllNotes(person.getId());\r\n\r\n\r\n        adapter = new Adapter(NotesFragment.this, getContext(), notes, person);\r\n        recyclerView.setAdapter(adapter);\r\n        Log.e(\"personget\", person.toString());\r\n        info.setText(\"Welcome \" + person.getName() + \" \" + person.getSurname());\r\n        addNote.setOnClickListener(new View.OnClickListener() {\r\n            @Override\r\n            public void onClick(View v) {\r\n                dialogAdd();\r\n            }\r\n        });\r\n\r\n\r\n        return binding.getRoot();\r\n    }\r\n\r\n\r\n    public void dialogAdd() {\r\n        RadioGroup rg;\r\n        Button okayBtn;\r\n\r\n        dialogadd = new Dialog(getContext(), android.R.style.Theme_DeviceDefault_Light_NoActionBar_Fullscreen);\r\n\r\n        dialogadd.setContentView(R.layout.dialog_box_add);\r\n        rg = dialogadd.findViewById(R.id.RadioGroupNoteAdd);\r\n        okayBtn = dialogadd.findViewById(R.id.buttonOkay);\r\n\r\n\r\n        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());\r\n        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);\r\n        dialogadd.show();\r\n        okayBtn.setOnClickListener(new View.OnClickListener() {\r\n            @Override\r\n            public void onClick(View v) {\r\n                NotesDao itemAdd = new NotesDao(getContext());\r\n                EditText note = dialogadd.findViewById(R.id.editTextEnterNote);\r\n                int type = rg.getCheckedRadioButtonId();\r\n                radioButton = dialogadd.findViewById(type);\r\n                if (radioButton.getText().toString().contains(\"ToDo\")) {\r\n                    itemAdd.addNote(db, NoteType.TODO, note.getText().toString(), person.getId());\r\n                } else if (radioButton.getText().toString().contains(\"Done\")) {\r\n                    itemAdd.addNote(db, NoteType.DONE, note.getText().toString(), person.getId());\r\n                } else if (radioButton.getText().toString().contains(\"In Progress\")) {\r\n                    itemAdd.addNote(db, NoteType.INPROGRESS, note.getText().toString(), person.getId());\r\n                }\r\n\r\n                dialogadd.dismiss();\r\n                notes.clear();\r\n                notes.addAll(db.getAllNotes(person.getId()));\r\n                adapter.notifyDataSetChanged();\r\n\r\n            }\r\n        });\r\n\r\n    }\r\n\r\n    @Override\r\n    public void onRequestPermissionsResult(int requestCode,\r\n                                           @NonNull String[] permissions,\r\n                                           @NonNull int[] grantResults) {\r\n        super.onRequestPermissionsResult(requestCode,\r\n                permissions,\r\n                grantResults);\r\n\r\n        if (requestCode == READ_EXTERNAL_STORAGE) {\r\n            if (grantResults.length > 0\r\n                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {\r\n                Toast.makeText(getContext(), \"Storage Permission Granted\", Toast.LENGTH_SHORT).show();\r\n\r\n            } else {\r\n                Toast.makeText(getContext(), \"Storage Permission Denied\", Toast.LENGTH_SHORT).show();\r\n            }\r\n        }\r\n    }\r\n    public void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {\r\n        if (requestCode == PICK_IMAGE && resultCode == RESULT_OK) {\r\n            Uri selectedImageUri = data.getData();\r\n            selectedImagePath = getRealPathFromURIForGallery(selectedImageUri);\r\n            //Log.d(\"onActivityResult: \"+selectedImagePath);\r\n            Bitmap myBitmap = BitmapFactory.decodeFile(selectedImagePath);\r\n            uploadImg.setImageBitmap(myBitmap);\r\n\r\n           //// notes.set(selectedImagePath);\r\n            //binding.textViewImagePath.setText(selectedImagePath);\r\n        }\r\n    }\r\n    public  void selectImage() {\r\n\r\n        Intent intent = new Intent(Intent.ACTION_PICK,\r\n                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);\r\n\r\n        startActivityForResult(Intent.createChooser(intent, \"select image\"),\r\n                PICK_IMAGE);\r\n    }\r\n    public String getRealPathFromURIForGallery(Uri uri) {\r\n        if (uri == null) {\r\n            return null;\r\n        }\r\n        String[] projection = {MediaStore.Images.Media.DATA};\r\n        Cursor cursor = requireContext().getContentResolver().query(uri, projection, null,\r\n                null, null);\r\n        if (cursor != null) {\r\n            int column_index =\r\n                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);\r\n            cursor.moveToFirst();\r\n            return cursor.getString(column_index);\r\n        }\r\n        assert false;\r\n        cursor.close();\r\n        return uri.getPath();\r\n    }\r\n\r\n\r\n\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/helin/noteapplication2/NotesFragment.java	(revision b6edefbe543da9746fbdcacb1df83afbb6f94507)
++++ app/src/main/java/com/helin/noteapplication2/NotesFragment.java	(date 1625209564525)
+@@ -31,9 +31,11 @@
+ 
+ import com.helin.noteapplication2.databinding.FragmentNotesBinding;
+ 
++import java.io.FileNotFoundException;
+ import java.util.ArrayList;
+ 
+ import static android.app.Activity.RESULT_OK;
++import static android.content.ContentValues.TAG;
+ import static androidx.core.app.ActivityCompat.startActivityForResult;
+ import static com.helin.noteapplication2.Adapter.myDialog;
+ 
+@@ -152,11 +154,16 @@
+             Uri selectedImageUri = data.getData();
+             selectedImagePath = getRealPathFromURIForGallery(selectedImageUri);
+             //Log.d("onActivityResult: "+selectedImagePath);
+-            Bitmap myBitmap = BitmapFactory.decodeFile(selectedImagePath);
+-            uploadImg.setImageBitmap(myBitmap);
++            //Bitmap myBitmap = BitmapFactory.decodeFile(selectedImagePath);
++            try {
++                Bitmap bitmap=BitmapFactory.decodeStream(requireActivity().getContentResolver().openInputStream(selectedImageUri));
++                uploadImg.setImageBitmap(bitmap);
++            } catch (FileNotFoundException e) {
++                Log.e(TAG, "onActivityResult: "+ e.getLocalizedMessage() );
++                e.printStackTrace();
++            }
+ 
+-           //// notes.set(selectedImagePath);
+-            //binding.textViewImagePath.setText(selectedImagePath);
++
+         }
+     }
+     public  void selectImage() {
+Index: app/src/main/res/layout/fragment_notes.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<androidx.constraintlayout.widget.ConstraintLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\r\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\r\n    xmlns:tools=\"http://schemas.android.com/tools\"\r\n    android:layout_width=\"match_parent\"\r\n    android:layout_height=\"match_parent\"\r\n    tools:context=\".NotesFragment\"\r\n    android:background=\"@color/nude\">\r\n\r\n    <androidx.recyclerview.widget.RecyclerView\r\n        android:id=\"@+id/RecyclerViewNotes\"\r\n        android:layout_width=\"0dp\"\r\n        android:layout_height=\"0dp\"\r\n        android:layout_marginTop=\"16dp\"\r\n        android:layout_marginBottom=\"8dp\"\r\n        app:layout_constraintBottom_toTopOf=\"@+id/buttonAddNote\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintStart_toStartOf=\"parent\"\r\n        app:layout_constraintTop_toBottomOf=\"@+id/imageView3\" />\r\n\r\n    <Button\r\n        android:id=\"@+id/buttonAddNote\"\r\n        style=\"@style/Widget.MaterialComponents.Button.Icon\"\r\n        android:layout_width=\"wrap_content\"\r\n        android:layout_height=\"wrap_content\"\r\n        android:layout_marginEnd=\"32dp\"\r\n        android:layout_marginRight=\"32dp\"\r\n        android:layout_marginBottom=\"8dp\"\r\n        android:text=\"Add note\"\r\n        app:icon=\"@drawable/icons8_add_24px\"\r\n        app:layout_constraintBottom_toBottomOf=\"parent\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\" />\r\n\r\n    <TextView\r\n        android:id=\"@+id/textViewInfo\"\r\n        android:layout_width=\"201dp\"\r\n        android:layout_height=\"26dp\"\r\n        android:layout_marginTop=\"28dp\"\r\n        android:layout_marginEnd=\"136dp\"\r\n        android:layout_marginRight=\"136dp\"\r\n        android:fontFamily=\"monospace\"\r\n        android:text=\"TextView\"\r\n        android:textAllCaps=\"true\"\r\n        android:textAppearance=\"@style/TextAppearance.AppCompat.Medium\"\r\n        app:layout_constraintEnd_toEndOf=\"parent\"\r\n        app:layout_constraintTop_toTopOf=\"parent\" />\r\n\r\n    <ImageView\r\n        android:id=\"@+id/imageView3\"\r\n        android:layout_width=\"59dp\"\r\n        android:layout_height=\"50dp\"\r\n        android:layout_marginTop=\"16dp\"\r\n        android:layout_marginEnd=\"3dp\"\r\n        android:layout_marginRight=\"3dp\"\r\n        android:src=\"@drawable/icons8_portrait_64px\"\r\n        app:layout_constraintEnd_toStartOf=\"@+id/textViewInfo\"\r\n        app:layout_constraintTop_toTopOf=\"parent\" />\r\n</androidx.constraintlayout.widget.ConstraintLayout>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/fragment_notes.xml	(revision b6edefbe543da9746fbdcacb1df83afbb6f94507)
++++ app/src/main/res/layout/fragment_notes.xml	(date 1625216091859)
+@@ -5,29 +5,39 @@
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+     tools:context=".NotesFragment"
+-    android:background="@color/nude">
++    android:background="@color/white">
++    <com.google.android.material.appbar.AppBarLayout
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        app:elevation="0dp"
++        tools:ignore="MissingConstraints">
++
++    </com.google.android.material.appbar.AppBarLayout>
+ 
+     <androidx.recyclerview.widget.RecyclerView
+         android:id="@+id/RecyclerViewNotes"
+-        android:layout_width="0dp"
+-        android:layout_height="0dp"
++        android:layout_width="423dp"
++        android:layout_height="466dp"
+         android:layout_marginTop="16dp"
+         android:layout_marginBottom="8dp"
+         app:layout_constraintBottom_toTopOf="@+id/buttonAddNote"
+         app:layout_constraintEnd_toEndOf="parent"
++        app:layout_constraintHorizontal_bias="0.0"
+         app:layout_constraintStart_toStartOf="parent"
+-        app:layout_constraintTop_toBottomOf="@+id/imageView3" />
++        app:layout_constraintTop_toBottomOf="@+id/imageView3"
++        app:layout_constraintVertical_bias="0.272" />
+ 
+     <Button
+         android:id="@+id/buttonAddNote"
+-        style="@style/Widget.MaterialComponents.Button.Icon"
++
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_marginEnd="32dp"
+         android:layout_marginRight="32dp"
+         android:layout_marginBottom="8dp"
+         android:text="Add note"
+-        app:icon="@drawable/icons8_add_24px"
++        style="@style/Widget.Shrine.Button"
++        app:icon="@drawable/icons8_add_24px_1"
+         app:layout_constraintBottom_toBottomOf="parent"
+         app:layout_constraintEnd_toEndOf="parent" />
+ 
+@@ -35,13 +45,12 @@
+         android:id="@+id/textViewInfo"
+         android:layout_width="201dp"
+         android:layout_height="26dp"
+-        android:layout_marginTop="28dp"
+-        android:layout_marginEnd="136dp"
+-        android:layout_marginRight="136dp"
++        android:layout_marginTop="80dp"
++        android:layout_marginEnd="104dp"
+         android:fontFamily="monospace"
+         android:text="TextView"
+         android:textAllCaps="true"
+-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
++        android:textAppearance="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem"
+         app:layout_constraintEnd_toEndOf="parent"
+         app:layout_constraintTop_toTopOf="parent" />
+ 
+@@ -49,10 +58,21 @@
+         android:id="@+id/imageView3"
+         android:layout_width="59dp"
+         android:layout_height="50dp"
+-        android:layout_marginTop="16dp"
+-        android:layout_marginEnd="3dp"
+-        android:layout_marginRight="3dp"
+-        android:src="@drawable/icons8_portrait_64px"
++        android:layout_marginTop="72dp"
++        android:layout_marginEnd="32dp"
++        android:src="@drawable/icons8_user_menu_female_64px"
+         app:layout_constraintEnd_toStartOf="@+id/textViewInfo"
+         app:layout_constraintTop_toTopOf="parent" />
+-</androidx.constraintlayout.widget.ConstraintLayout>
+\ No newline at end of file
++
++    <androidx.appcompat.widget.Toolbar
++        android:id="@+id/app_bar"
++        style="@style/Widget.Shrine.Toolbar"
++        android:layout_width="match_parent"
++        android:layout_height="?attr/actionBarSize"
++        android:src="@drawable/logotemiz_1_85x85"
++        tools:layout_editor_absoluteX="0dp"
++        tools:layout_editor_absoluteY="0dp"
++        tools:ignore="MissingConstraints"
++        app:title="ToDo"/>
++
++</androidx.constraintlayout.widget.ConstraintLayout>
+Index: app/src/main/java/com/helin/noteapplication2/LoginFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.helin.noteapplication2;\r\n\r\nimport android.content.Intent;\r\nimport android.database.Cursor;\r\nimport android.os.Bundle;\r\nimport android.text.TextUtils;\r\nimport android.util.Log;\r\nimport android.view.LayoutInflater;\r\nimport android.view.View;\r\nimport android.view.ViewGroup;\r\nimport android.widget.Button;\r\nimport android.widget.EditText;\r\nimport android.widget.Toast;\r\n\r\nimport androidx.annotation.NonNull;\r\nimport androidx.annotation.Nullable;\r\nimport androidx.fragment.app.Fragment;\r\nimport androidx.fragment.app.FragmentTransaction;\r\nimport androidx.navigation.NavDirections;\r\nimport androidx.navigation.Navigation;\r\n\r\nimport com.google.android.material.textfield.TextInputLayout;\r\n\r\npublic class LoginFragment extends Fragment {\r\n    private TextInputLayout textInputLayoutUsername;\r\n    private TextInputLayout textInputLayoutPassword;\r\n    private EditText passwordEt;\r\n    private Button loginBtn;\r\n    private Button registerBtn;\r\n    private View rootView;\r\n    private String loginId;\r\n    private PersonDao personDao;\r\n    private String password;\r\n    Boolean EditTextEmptyHolder;\r\n    String TempPassword = \"NOT_FOUND\";\r\n    private static final String TAG = \"LoginFragment\";\r\n\r\n    DBHelper db;\r\n\r\n    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {\r\n        rootView = inflater.inflate(R.layout.fragment_login, container, false);\r\n        init();\r\n        loginBtn.setOnClickListener(new View.OnClickListener() {\r\n            @Override\r\n            public void onClick(View v) {\r\n                loginId = textInputLayoutUsername.getEditText().getText().toString();\r\n                password= textInputLayoutPassword.getEditText().getText().toString();\r\n                personDao= new PersonDao(requireContext());\r\n                Person person = db.login(loginId, password);\r\n                if (personDao.checkUser(loginId,password)) {\r\n                    NavDirections act = LoginFragmentDirections.actionLoginFragmentToNotesFragment(person);\r\n                    Navigation.findNavController(rootView).navigate(act);\r\n                    Log.d(\"person\", person.toString());\r\n                    Toast.makeText(getContext(), \"Login successful, redirecting to Notes Page.\", Toast.LENGTH_SHORT).show();\r\n                }\r\n                else if(loginId==null || password==null)\r\n                    textInputLayoutUsername.setError(\"Please fill all fields\");\r\n                else if (!(personDao.checkUser(loginId,password)))\r\n                    textInputLayoutUsername.setError(\"Wrong username or password\");\r\n\r\n\r\n            }\r\n        });\r\n        registerBtn.setOnClickListener(new View.OnClickListener() {\r\n            @Override\r\n            public void onClick(View v) {\r\n                register();\r\n\r\n            }\r\n        });\r\n\r\n\r\n        return rootView;\r\n    }\r\n\r\n\r\n\r\n    public void CheckFinalResult() {\r\n\r\n        if (TempPassword.equalsIgnoreCase(password)) {\r\n\r\n            Toast.makeText(getContext(), \"Login Successfully\", Toast.LENGTH_LONG).show();\r\n            NavDirections act = LoginFragmentDirections.actionLoginFragmentToNotesFragment(null);\r\n            Navigation.findNavController(rootView).navigate(act);\r\n\r\n\r\n        } else {\r\n            Toast.makeText(getContext(), \"UserName or Password is Wrong, Please Try Again.\", Toast.LENGTH_LONG).show();\r\n        }\r\n        TempPassword = \"NOT_FOUND\";\r\n\r\n    }\r\n\r\n\r\n    public void register() {\r\n        NavDirections act = LoginFragmentDirections.actionLoginFragmentToRegisterFragment();\r\n        Navigation.findNavController(rootView).navigate(act);\r\n    }\r\n\r\n    public void init() {\r\n\r\n        db = new DBHelper(getContext());\r\n        db.getWritableDatabase();\r\n        loginBtn = (Button) rootView.findViewById(R.id.buttonLogin);\r\n        textInputLayoutPassword = rootView.findViewById(R.id.textInputLayoutPassword);\r\n        textInputLayoutUsername = rootView.findViewById(R.id.textInputLayoutUsername);\r\n        registerBtn = (Button) rootView.findViewById(R.id.buttonRegister);\r\n\r\n\r\n    }\r\n\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/helin/noteapplication2/LoginFragment.java	(revision b6edefbe543da9746fbdcacb1df83afbb6f94507)
++++ app/src/main/java/com/helin/noteapplication2/LoginFragment.java	(date 1625146938993)
+@@ -53,12 +53,11 @@
+                     Log.d("person", person.toString());
+                     Toast.makeText(getContext(), "Login successful, redirecting to Notes Page.", Toast.LENGTH_SHORT).show();
+                 }
+-                else if(loginId==null || password==null)
+-                    textInputLayoutUsername.setError("Please fill all fields");
+-                else if (!(personDao.checkUser(loginId,password)))
++
++                else if ((!(personDao.checkUser(loginId,password)) && (loginId!= "" || password!="" )))
+                     textInputLayoutUsername.setError("Wrong username or password");
+-
+-
++                else if (loginId.equals(null) || password.equals(null))
++                    textInputLayoutUsername.setError("Fill the fields");
+             }
+         });
+         registerBtn.setOnClickListener(new View.OnClickListener() {
+Index: app/src/main/java/com/helin/noteapplication2/PersonDao.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.helin.noteapplication2;\r\n\r\nimport android.app.Activity;\r\nimport android.content.ContentValues;\r\nimport android.content.Context;\r\nimport android.database.Cursor;\r\nimport android.database.sqlite.SQLiteDatabase;\r\nimport android.database.sqlite.SQLiteOpenHelper;\r\n\r\npublic class PersonDao {\r\n    DBHelper db;\r\n    Context mycontext;\r\n\r\n    public PersonDao(Context mycontext) {\r\n        this.mycontext = mycontext;\r\n    }\r\n\r\n    public void register(DBHelper db, String username, String password, String name, String surname){\r\n        SQLiteDatabase dba= db.getWritableDatabase();\r\n        ContentValues values= new ContentValues();\r\n\r\n        values.put(db.KEY_PERSON_USERNAME,username);\r\n        values.put(db.KEY_PERSON_PASSWORD,password);\r\n        values.put(db.KEY_PERSON_NAME,name);\r\n        values.put(db.KEY_PERSON_SURNAME,surname);\r\n\r\n        dba.insertOrThrow(\"person\",null,values);\r\n        dba.close();\r\n    }\r\n    public boolean checkUser(String username, String password) {\r\n        db=new DBHelper(mycontext.getApplicationContext());\r\n        // array of columns to fetch\r\n        String[] columns = {\r\n                db.KEY_PERSON_USERNAME\r\n        };\r\n        SQLiteDatabase dba = db.getReadableDatabase();\r\n        // selection criteria\r\n        String selection = db.KEY_PERSON_USERNAME + \" = ?\" + \" AND \" + db.KEY_PERSON_PASSWORD + \" = ?\";\r\n        // selection arguments\r\n        String[] selectionArgs = {username, password};\r\n        // query user table with conditions\r\n        /**\r\n         * Here query function is used to fetch records from user table this function works like we use sql query.\r\n         * SQL query equivalent to this query function is\r\n         * SELECT user_id FROM user WHERE user_email = 'jack@androidtutorialshub.com' AND user_password = 'qwerty';\r\n         */\r\n        Cursor cursor = dba.query(db.TABLE_PERSON, //Table to query\r\n                columns,                    //columns to return\r\n                selection,                  //columns for the WHERE clause\r\n                selectionArgs,              //The values for the WHERE clause\r\n                null,                       //group the rows\r\n                null,                       //filter by row groups\r\n                null);                      //The sort order\r\n        int cursorCount = cursor.getCount();\r\n        cursor.close();\r\n        db.close();\r\n        if (cursorCount > 0) {\r\n            return true;\r\n        }\r\n        return false;\r\n    }\r\n}\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/helin/noteapplication2/PersonDao.java	(revision b6edefbe543da9746fbdcacb1df83afbb6f94507)
++++ app/src/main/java/com/helin/noteapplication2/PersonDao.java	(date 1625146283608)
+@@ -29,21 +29,13 @@
+     }
+     public boolean checkUser(String username, String password) {
+         db=new DBHelper(mycontext.getApplicationContext());
+-        // array of columns to fetch
+         String[] columns = {
+-                db.KEY_PERSON_USERNAME
++                db.KEY_PERSON_USERNAME,
++                db.KEY_PERSON_PASSWORD
+         };
+         SQLiteDatabase dba = db.getReadableDatabase();
+-        // selection criteria
+         String selection = db.KEY_PERSON_USERNAME + " = ?" + " AND " + db.KEY_PERSON_PASSWORD + " = ?";
+-        // selection arguments
+         String[] selectionArgs = {username, password};
+-        // query user table with conditions
+-        /**
+-         * Here query function is used to fetch records from user table this function works like we use sql query.
+-         * SQL query equivalent to this query function is
+-         * SELECT user_id FROM user WHERE user_email = 'jack@androidtutorialshub.com' AND user_password = 'qwerty';
+-         */
+         Cursor cursor = dba.query(db.TABLE_PERSON, //Table to query
+                 columns,                    //columns to return
+                 selection,                  //columns for the WHERE clause

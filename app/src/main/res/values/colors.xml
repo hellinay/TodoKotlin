@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#e06377</color>
+    <color name="purple_700">#000000</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="lightpink">#C8F9D5E5</color>
+    <color name="salmonpink">#7EEEAC99</color>
+    <color name="pink">#e06377</color>
+    <color name="darkpink">#A4C83349</color>
+    <color name="nude">#ADF2D2BD</color>
+    <color name="colorPrimary">#E0E0E0</color>
+    <color name="colorPrimaryDarkuse">#FBB8AC</color>
+    <color name="colorAccent">#FEDBD0</color>
+    <color name="textColorPrimary">#442C2E</color>
+    <color name="toolbarIconColor">@color/textColorPrimary</color>
+    <color name="loginPageBackgroundColor">#FFFFFF</color>
+    <color name="productGridBackgroundColor">#FFFFFF</color>
+    <color name="textInputOutlineColor">#FBB8AC</color>
+    <color name="buttonBackgroundTint">#DD2E0E</color>
+    <color name="buttonTextColor">#FFFFFF</color>
+    <color name="textColor">#442C2E</color>
+    <color name="surface">#FFFBFA</color>
+
+</resources>
