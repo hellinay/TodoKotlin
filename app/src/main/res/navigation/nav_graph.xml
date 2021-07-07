@@ -6,7 +6,7 @@
     app:startDestination="@id/loginFragment">
     <fragment
         android:id="@+id/registerFragment"
-        android:name="com.helin.noteapplication2.RegisterFragment"
+        android:name="com.helin.noteapplicationkotlin.RegisterFragment"
         android:label="RegisterFragment" >
         <action
             android:id="@+id/action_registerFragment_to_loginFragment"
@@ -14,7 +14,7 @@
     </fragment>
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.helin.noteapplication2.LoginFragment"
+        android:name="com.helin.noteapplicationkotlin.LoginFragment"
         android:label="LoginFragment" >
         <action
             android:id="@+id/action_loginFragment_to_registerFragment"
@@ -29,11 +29,12 @@
     </fragment>
     <fragment
         android:id="@+id/notesFragment"
-        android:name="com.helin.noteapplication2.NotesFragment"
+        android:name="com.helin.noteapplicationkotlin.NotesFragment"
         android:label="fragment_notes"
         tools:layout="@layout/fragment_notes" >
         <argument
             android:name="person"
-            app:argType="com.helin.noteapplication2.Person" />
+            app:argType="com.helin.noteapplicationkotlin.Person"
+            app:nullable="true" />
     </fragment>
 </navigation>
