@@ -2,6 +2,7 @@ package com.helin.noteapplicationkotlin
 
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +10,9 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
+import androidx.viewpager2.adapter.FragmentViewHolder
 
 class RegisterFragment : Fragment() {
     private var nameEt: EditText? = null
@@ -19,11 +22,23 @@ class RegisterFragment : Fragment() {
     private var registerBtn: Button? = null
     private var rootView: View? = null
     private var db: DBHelper? = null
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         rootView = inflater.inflate(R.layout.fragment_register, container, false)
         init()
         registerBtn!!.setOnClickListener { register(nameEt!!.text.toString(), surnameEt!!.text.toString(), passwordEt!!.text.toString(), idEt!!.text.toString()) }
+
+
+
+        val model: RegisterFragmentViewModel by viewModels()
+        model.getUser().observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+
+        })
+
+
         return rootView
+
+
     }
 
     fun goToLogin(v: View?, id: String?) {
@@ -50,6 +65,7 @@ class RegisterFragment : Fragment() {
         surnameEt = rootView!!.findViewById(R.id.editTextRegisterSurname)
         passwordEt = rootView!!.findViewById(R.id.editTextRegisterPassword)
         idEt = rootView!!.findViewById(R.id.editTextRegisterId)
+
     }
 
     fun checkDataEntered(): Boolean {

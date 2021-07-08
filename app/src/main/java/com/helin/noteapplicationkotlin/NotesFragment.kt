@@ -16,12 +16,12 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.helin.noteapplicationkotlin.databinding.FragmentNotesBinding
 import java.io.FileNotFoundException
 import java.util.*
+import kotlin.collections.ArrayList
 
 class NotesFragment : Fragment() {
     var recyclerView: RecyclerView? = null
@@ -34,49 +34,39 @@ class NotesFragment : Fragment() {
     private var notes: ArrayList<Notes> = ArrayList()
     private var info: TextView? = null
     var uploadImg: ImageView? = null
+    var noteList=ArrayList<Notes>()
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = FragmentNotesBinding.inflate(inflater, container, false)
-        //val model: NotesViewModel by viewModels()
-        db = DBHelper(context)
-        db!!.writableDatabase
+        val model: NotesViewModel by viewModels()
+
         info = binding.textViewInfo
         addNote = binding.buttonAddNote
         recyclerView = binding.RecyclerViewNotes
+
         init()
+
         Log.e("personget", person.toString())
+
         info!!.text = "Welcome " + person!!.name + " " + person!!.surname
-        addNote!!.setOnClickListener { dialogAdd() }
+
+        addNote!!.setOnClickListener {
+
+            model.addNote(person!!,requireContext())
+        }
+        model.getAllNotes(requireContext(), person!!)
+        model.notes.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+            noteList.clear()
+            noteList.addAll(it)
+            Log.e("notes", "onCreateView: "+it.size)
+            binding.RecyclerViewNotes.adapter!!.notifyDataSetChanged()
+
+        })
+        adapter= Adapter(this,requireContext(),noteList, person!!)
+        binding.RecyclerViewNotes.adapter=adapter
         return binding.root
     }
 
-    fun dialogAdd() {
-        val rg: RadioGroup
-        val okayBtn: Button
-        dialogadd = Dialog(requireContext(), android.R.style.Theme_DeviceDefault_Light_NoActionBar_Fullscreen)
-        dialogadd!!.setContentView(R.layout.dialog_box_add)
-        rg = dialogadd!!.findViewById(R.id.RadioGroupNoteAdd)
-        okayBtn = dialogadd!!.findViewById(R.id.buttonOkay)
-        val linearLayoutManager = LinearLayoutManager(context)
-        linearLayoutManager.orientation = LinearLayoutManager.VERTICAL
-        dialogadd!!.show()
-        okayBtn.setOnClickListener {
-            val itemAdd = NotesDao(context)
-            val note = dialogadd!!.findViewById<EditText>(R.id.editTextEnterNote)
-            val type = rg.checkedRadioButtonId
-            radioButton = dialogadd!!.findViewById(type)
-            if (radioButton.getText().toString().contains("ToDo")) {
-                itemAdd.addNote(db, NoteType.TODO, note.text.toString(), person!!.id)
-            } else if (radioButton.getText().toString().contains("Done")) {
-                itemAdd.addNote(db, NoteType.DONE, note.text.toString(), person!!.id)
-            } else if (radioButton.getText().toString().contains("In Progress")) {
-                itemAdd.addNote(db, NoteType.INPROGRESS, note.text.toString(), person!!.id)
-            }
-            dialogadd!!.dismiss()
-            notes!!.clear()
-            notes!!.addAll(db!!.getAllNotes(person!!.id))
-            adapter!!.notifyDataSetChanged()
-        }
-    }
 
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>,
@@ -135,17 +125,17 @@ class NotesFragment : Fragment() {
     }
 
     fun init() {
-        recyclerView!!.layoutManager = LinearLayoutManager(context)
+
+        recyclerView?.layoutManager = LinearLayoutManager(context)
         Adapter.Companion.myDialog = Dialog(requireContext(), android.R.style.Theme_DeviceDefault_Light_NoActionBar_Fullscreen)
         Adapter.Companion.myDialog!!.setContentView(R.layout.dialog_box_edit)
         uploadImg = Adapter.Companion.myDialog!!.findViewById<ImageView>(R.id.imageViewUpload)
         val linearLayoutManager = LinearLayoutManager(requireContext())
         linearLayoutManager.orientation = LinearLayoutManager.VERTICAL
-        recyclerView!!.layoutManager = linearLayoutManager
+        recyclerView?.layoutManager = linearLayoutManager
         person = NotesFragmentArgs.fromBundle(requireArguments()!!).person
-        notes = db!!.getAllNotes(person!!.id)
-        adapter = Adapter(this@NotesFragment, requireContext(), notes, person!!)
-        recyclerView!!.adapter = adapter
+
+
     }
 
     companion object {

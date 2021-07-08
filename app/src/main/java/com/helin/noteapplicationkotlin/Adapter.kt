@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.pm.PackageManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +13,7 @@ import android.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -28,6 +30,7 @@ class Adapter(fragment: Fragment, var myContext: Context, notes: ArrayList<Notes
     var type = 0
     lateinit var rgedit: RadioGroup
     var fragment: Fragment
+    var viewModel=NotesViewModel()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewNotesHolder {
 
@@ -35,6 +38,10 @@ class Adapter(fragment: Fragment, var myContext: Context, notes: ArrayList<Notes
         rv = view.findViewById(R.id.RecyclerViewNotes)
         val cardViewNotesHolder = CardViewNotesHolder(view)
         init()
+        /*val model: NotesViewModel by viewModels()
+        model.notes.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+            Log.d("NotesFragment", "onCreateView: "+ it)
+        })*/
         return cardViewNotesHolder
     }
 
@@ -83,38 +90,17 @@ class Adapter(fragment: Fragment, var myContext: Context, notes: ArrayList<Notes
                 prog.isChecked = true
             }
             editBtn.setOnClickListener { dialogEdit(note) }
+
             deleteBtn.setOnClickListener {
-                val itemDelete = NotesDao(myContext)
-                val builder = AlertDialog.Builder(myContext)
-                //itemDelete.deleteNote(db, note.noteId, person.id)
-                MaterialAlertDialogBuilder(myContext,
-                        R.style.AlertDialog_AppCompat)
-                        .setMessage("Do you want to delete " + note.note + " ?")
-                        .setNegativeButton(R.string.noBtn) { dialog, which ->  dialog.dismiss() }
-                        builder.setPositiveButton(R.string.okayBtn) { dialog, id ->
-                            itemDelete.deleteNote(db, note.noteId, person.id)
-                            notes.removeAt(position)
-                            notifyDataSetChanged()
-
-                        }
-                        builder.show()
-
+                viewModel.deleteNote(myContext,note,person,position)
 
             }
         }
 
-        fun checkPermission(permission: String, requestCode: Int) {
-            if (ContextCompat.checkSelfPermission(myContext!!, permission) == PackageManager.PERMISSION_DENIED) {
-                Toast.makeText(myContext, "permission", Toast.LENGTH_SHORT).show()
-                ActivityCompat.requestPermissions(fragment.requireActivity(), arrayOf(permission), requestCode)
-            } else {
-                Toast.makeText(myContext, "Permission already granted", Toast.LENGTH_SHORT).show()
-                (fragment as NotesFragment).selectImage()
-            }
-        }
 
-        fun dialogEdit(note: Notes?) {
-            val saveBtn: Button
+        fun dialogEdit(note: Notes) {
+            viewModel.editNote(note,myContext,person,radioGroup)
+            /*val saveBtn: Button
             val uploadBtn: Button
             val editedNote: TextView
             uploadBtn = myDialog!!.findViewById(R.id.buttonUpload)
@@ -144,7 +130,7 @@ class Adapter(fragment: Fragment, var myContext: Context, notes: ArrayList<Notes
                 } else myDialog!!.dismiss()
                 myDialog!!.dismiss()
 
-            }
+            }*/
         }
 
         init {

@@ -73,7 +73,7 @@ class DBHelper(private val context: Context?) : SQLiteOpenHelper(context, DB_NAM
         val db = this.readableDatabase
         val cursor = db.rawQuery(query, arrayOf(username, password))
         while (cursor.moveToNext()) {
-            val person = Person()
+            val person = Person(KEY_PERSON_NAME, KEY_PERSON_USERNAME, KEY_PERSON_PASSWORD, KEY_PERSON_SURNAME)
             person.id = cursor.getInt(cursor.getColumnIndex(KEY_PERSON_ID))
             person.email = cursor.getString(cursor.getColumnIndex(KEY_PERSON_USERNAME))
             person.password = cursor.getString(cursor.getColumnIndex(KEY_PERSON_PASSWORD))
